@@ -164,6 +164,10 @@ Observaciones:<br><textarea id="obs" rows="3"></textarea>
 let productos=[];
 let carrito=[];
 
+// ===== REFERENCIAS DE BOTONES =====
+const btnExportar = document.getElementById("btnExportar");
+const btnCarrito = document.getElementById("btnCarrito");
+
 /* ===== CARGA AUTOMÁTICA ===== */
 window.addEventListener("load",()=>{
   fetch("stock.csv")
@@ -238,4 +242,63 @@ function cambiar(id){
 
 function mostrarCarrito(){
   if(!carrito.length){
-    lista
+    lista.innerText="Vacío";
+    return;
+  }
+  let t=0;
+  let h="<table><tr><th>Código</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr>";
+  carrito.forEach(i=>{
+    let s=i.cant*i.precio; t+=s;
+    h+=`<tr><td>${i.codigo}</td><td>${i.cant}</td><td>${i.precio.toFixed(2)}</td><td>${s.toFixed(2)}</td></tr>`;
+  });
+  h+=`<tr><td colspan="3"><b>Total</b></td><td><b>${t.toFixed(2)}</b></td></tr></table>`;
+  lista.innerHTML=h;
+}
+
+function actualizarResumen(){
+  let c=0,t=0;
+  carrito.forEach(i=>{c+=i.cant; t+=i.cant*i.precio;});
+  resumen.innerText=`Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
+
+  // ===== CAMBIO COLOR BOTONES =====
+  const btns=[btnExportar, btnCarrito];
+  if(t>0){
+    btns.forEach(b=>b.classList.add("boton-activo"));
+  }else{
+    btns.forEach(b=>b.classList.remove("boton-activo"));
+  }
+}
+
+function abrirCarrito(){ modal.style.display="block"; }
+function cerrarCarrito(){ modal.style.display="none"; }
+
+modal.addEventListener("click", e => {
+  if(e.target === modal) cerrarCarrito();
+});
+
+function exportar(){
+  if(!carrito.length){ alert("Carrito vacío"); return; }
+  let csv="PEDIDO RELOJES CASIO\n\n";
+  csv+=`Razon Social;${razon.value}\nFecha;${fecha.value}\nObservaciones;${obs.value}\n\n`;
+  csv+="Codigo;Cantidad;Precio\n";
+  carrito.forEach(i=>csv+=`${i.codigo};${i.cant};${i.precio}\n`);
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download="pedido.csv";
+  a.click();
+}
+
+/* ===== FILTRO DE BÚSQUEDA ===== */
+function filtrar(){
+  const txt = busqueda.value.toLowerCase();
+  document.querySelectorAll(".card").forEach(c=>{
+    const cod = c.querySelector(".codigo").innerText.toLowerCase();
+    c.style.display = cod.includes(txt) ? "" : "none";
+  });
+}
+
+window.addEventListener("scroll",()=>{ volverArriba.style.display=window.scrollY>300?"block":"none"; });
+</script>
+
+</body>
+</html>
