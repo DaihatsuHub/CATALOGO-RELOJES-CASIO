@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" charset="utf-8"/>	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	
+	<title>
+		RELOJ CASIO	</title>
+
+			<meta name="robots" content="noindex,nofollow">
+			
+	
+	    		    		<meta name="description"  property="description" content="Catálogo de Watchland" />	
+    		    		    		<meta name="og:site_name"  property="og:site_name" content="Catálogo de Watchland" />	
+    		    		    		<meta name="og:title"  property="og:title" content="Catálogo de Watchland" />	
+    		    		    		<meta name="og:description"  property="og:description" content="Catálogo de Watchland" />	
+    		    		    		<meta name="og:type"  property="og:type" content="website" />	
+    		    		    		<meta name="og:image"  property="og:image" content="/files/company/image//37/image_1700753025.jpg" />	
+    		    		
+		<link rel="canonical" href="https://catalog.smarty.com.ar/token/f733b1e1b240962956929c41588ec9588d5f8f4d/92013" />	
+	
+
+	<!-- Si deseas incluir SearchAction para mejorar la búsqueda -->
+			
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "WebSite",
+				"name": "Watchland",
+				"url": "https://catalog.smarty.com.ar",
+									"logo": "https://catalog.smarty.com.ar//files/company/image//37/image_1700753025.jpg",
+												"potentialAction": {
+					"@type": "SearchAction",
+					"target": "https://catalog.smarty.com.ar/catalog?keyword={search_term_string}",
+					"query-input": "required name=search_term_string"
+				}
+			}
+		</script>
+	
+			<meta name="theme-color" content="#000000">
+	
+	<link rel="preload" type="text/css" as="style" onload="this.rel='stylesheet'" href="/css/bootstrap.css?1753896698" async="async"/><noscript><link rel="preload" type="text/css" href="/css/bootstrap.css?1753896698" async="async"/></noscript><link rel="preload" type="text/css" as="style" onload="this.rel='stylesheet'" href="/css/swiper.min.css?1733326598" async="async"/><noscript><link rel="preload" type="text/css" href="/css/swiper.min.css?1733326598" async="async"/></noscript><link rel="preload" type="text/css" as="style" onload="this.rel='stylesheet'" href="/css/base.css?1765478187" async="async"/><noscript><link rel="preload" type="text/css" href="/css/base.css?1765478187" async="async"/></noscript><link rel="preload" type="text/css" as="style" onload="this.rel='stylesheet'" href="/css/catalogs.css?1756304886" async="async"/><noscript><link rel="preload" type="text/css" href="/css/catalogs.css?1756304886" async="async"/></noscript>
+	<link rel="apple-touch-icon" href="/files/company/image//37/image_1700753025.jpg">
+	
+			<meta name="thumbnail" content="/files/company/image//37/image_1700753025.jpg" />
+		
+	
+	<link href="/files/marketing/37/general/favicon.ico?1605632466" type="image/x-icon" rel="icon"/><link href="/files/marketing/37/general/favicon.ico?1605632466" type="image/x-icon" rel="shortcut icon"/><script type="text/javascript" src="/js/jquery.js?1645213069"></script><script type="text/javascript" src="/js/bootstrap.bundle.js?1753896698"></script><script type="text/javascript" src="/js/base.js?1761224527"></script>	<script>
+		function applyOffset(selector, headerSelector){
+            // Get nav height on load
+			const head_height = $(headerSelector).outerHeight();
+			//console.log(headerSelector);console.log(head_height);
+			$(selector).css("padding-top", head_height); 			
+        }
+    
+    	function applyScroll(headerSelector) {
+    		let didScroll;
+    	    let lastScrollTop = 0;
+    	    const delta = 30;
+	    	const head_height = $(headerSelector).outerHeight();
+    		
+			window.addEventListener("scroll", function(event){
+                didScroll = true;
+            });
+    	
+    	    setInterval(function() {
+    	        if (didScroll) {
+    	            hasScrolled();
+    	            didScroll = false;
+    	        }
+    	    }, 250);
+    	
+    	    function hasScrolled() {
+    	        const st = window.pageYOffset;
+    	        
+    	        // Make sure they scroll more than delta
+    	        if(Math.abs(lastScrollTop - st) <= delta) {
+    	            return;
+    	        }
+    	        // If they scrolled down and are past the navbar, add class .move-up.
+    	        if (st > lastScrollTop && st > head_height){
+    	            $(headerSelector).addClass('compress');   
+    	        } else {
+    	            // Scroll Up
+    	            if(st + $(window).height() < $(document).height()) {
+    	                $(headerSelector).removeClass('compress');
+    	            }
+    	        }
+    	
+    	        lastScrollTop = st;
+    	    }
+    	}
+    	
+    	function applyMarqueeOnOverflow() {
+    		const markeeOverflows = document.getElementsByClassName("markee-overflow-container");
+        	Array.from(markeeOverflows).forEach((el) => {
+                $(el).removeClass('marquee');
+                
+                if(isElementOverflowing(el)) {
+                	$(el).addClass('marquee');
+                } 
+            });
+        }
+        
+        
+    	$(function () {
+			//This is the first applyOffset. Maybe its out of timing so it needs to be executed again in window.'load' event. This is being executed only because its early
+			applyOffset("body", '#mainHeader-wrapper');
+
+			//
+        	$(window).resize(function() {
+                applyOffset("body", '#mainHeader-wrapper');
+                
+                //marquee
+                applyMarqueeOnOverflow();
+            });
+
+        	//marquee
+        	applyMarqueeOnOverflow();
+
+			            	// Apply Scroll action on load
+            	applyScroll('#mainHeader-wrapper');
+	    	    	});
+
+		window.addEventListener("load", function () {
+			// Apply offset nav height on load and on resize
+			applyOffset("body", '#mainHeader-wrapper');
+		});
+	</script>
+
+		
+	<!-- Custom company styles -->
+	
+<style>
+    
+    body {
+        background-color:#ffffff !important;
+    	color:#5b5252 !important;
+    	font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+    	font-size: 1em;
+    }
+    
+    p, small, h1, h2, h3, h4, h5, h6 {
+    	color:#5b5252 !important;
+    }
+    
+    #mainHeader, 
+    #mainHeader-wrapper {
+    	background-color:#000000 !important;
+    }
+    #mainHeader-wrapper > .topbar {
+	   background-color:#000000;
+    }
+        
+    .desktop-nav {
+        background-color:#ffffff !important;
+    }
+    .desktop-nav .desktop-nav-item,
+    .desktop-nav .desktop-nav-link,
+    .desktop-nav .dropdown-toggle {
+    	color:#5b5252; 
+    }
+
+        
+    #footer { 
+    	background-color:#000000 !important;
+    	    }
+    #footer, #footer h4, #footer a, #footer small, #footer p, #footer svg { 
+                    color: #FFFFFF !important;
+            fill: #FFFFFF !important;
+            }
+    #footer .footer-social .social-icon-logo {
+                    fill: #FFFFFF !important;
+            }
+    
+    /*BUTTONS*/
+        
+        
+    
+    .item-tags .tag {
+        color:#FFFFFF !important;
+            }
+    
+    </style>	
+	</head>
+<body class="d-flex flex-column notranslate ">
+	
+	
+
+	
+<section id="mainHeader-wrapper">
+	
+    <!-- Static navbar -->
+    <nav id="mainHeader" data-bs-theme="dark" role="navigation">
+    	<div class="container-fluid d-flex justify-content-between row gx-0">
+    		    		
+    		<div class="col-4 text-center text-md-start order-1 p-0">
+    			<h1 class="m-0">
+    				<a class="navbar-brand" href="/token/f733b1e1b240962956929c41588ec9588d5f8f4d"><img src="/files/company/image//37/image_1700753025.jpg" style="max-height: 55px; max-width: 100%; margin-top: -8px;" title="Watchland" alt="Watchland"/></a>
+    				<span class="d-none">Watchland</span>
+    			</h1>
+    		</div>
+    		
+    		<div class="col-12 col-md-4 order-last order-md-1">
+    				  
+              		<form action="/token/f733b1e1b240962956929c41588ec9588d5f8f4d" id="catalog-main-search-form" class="row row-cols-md-auto g-2 form-search col-12 offset-xl-2 col-xl-8" data-token="f733b1e1b240962956929c41588ec9588d5f8f4d" method="get" accept-charset="utf-8">            			<div class="input-group input-group-sm w-100">
+            				<input name="keyword" value="" class="form-control search-query" placeholder="Buscar productos, código..." type="text" id="keyword"/>            					
+            				<button type="submit" class="btn btn-outline-light" value="Buscar" title="Buscar"><svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="https://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/><path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/></svg></button>            			</div>
+            			            		</form>    			    		</div>
+    			
+    	    <div class="col-8 col-md-4 order-2">
+    			<div class="d-flex">
+	    			<ul class="ms-auto justify-content-end flex-nowrap">	
+	        				        				<li class="header-item text-end">
+	        					<span>HATSU ELECTRONICS S.A</span>
+	        				</li>
+	            			    					            			<li class="header-item">
+	                			<a href="/carts/view/f733b1e1b240962956929c41588ec9588d5f8f4d" class="header-info-button">
+	                    			<svg width="24px" height="24px" viewBox="0 0 16 16" class="bi bi-cart" fill="currentColor" xmlns="https://www.w3.org/2000/svg">
+	                                  <path fill-rule="evenodd" d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"></path>
+	                    			</svg>
+	                    			<span class="badge rounded-pill bg-secondary header-info-notification-badge cart-badge-count-items align-top"></span>
+	                    			<span class="header-info-button-label">Carrito</span>
+	                			</a>
+	            			</li>	
+	        				        		</ul>
+	        	</div>
+    		</div>						
+    	</div>
+    </nav>
+    
+    </section>
+
+	
+	<main role="main" class="flex-grow-1">
+		<div class="container">
+			<!-- Main component for a primary marketing message or call to action -->
+				
+			<link rel="preload" type="text/css" as="style" onload="this.rel='stylesheet'" href="/css/catalogs_product.css?1727353072" async="async"/><noscript><link rel="preload" type="text/css" href="/css/catalogs_product.css?1727353072" async="async"/></noscript>
+
+	<input type="hidden" name="token" id="token" value="f733b1e1b240962956929c41588ec9588d5f8f4d"/>
+	
+
+<div class="row">
+	<div class="col">
+		<nav aria-label="breadcrumb">
+		  <ol class="breadcrumb">
+		    <li class="breadcrumb-item"><a href="/token/f733b1e1b240962956929c41588ec9588d5f8f4d">Cat&aacute;logo</a></li>
+		    <li class="breadcrumb-item active" aria-current="page">RELOJ CASIO</li>
+		  </ol>
+		</nav>
+	</div>
+</div>
+
+<div class="product-detail row">
+	<div class="product-detail-images d-flex flex-column col-12 col-md-6">
+		<div class="flex-grow-1 product-detail-images-container">
+						
+			<img src="/files/product_image/image/37/62288/thumb_1574706957.jpg" data-src="/files/product_image/image/37/62288/thumb_1574706957.jpg" title="AEQ-110BW-9A - RELOJ CASIO" alt="RELOJ CASIO" class="product-detail-images-mainimg img-fluid lazyload">
+			
+			<iframe id="mainVideoPlayer" type="text/html" src="" style="display:none;" frameborder="0" allow="autoplay" class="product-detail-images-mainvideo"></iframe>
+		</div>
+		<ul class="product-detail-images-thumnails nav nav-tabs">
+					</ul>
+	</div>
+	<div class="product-detail-details d-flex flex-column col-12 col-md-6">
+		<h1 class="product-title">
+			RELOJ CASIO		</h1>
+		
+			  
+					
+		
+			  	
+				<h4 class="price">
+				  	
+					  	
+											<span>
+				  			$ 76,07				  		</span>
+			  					  		
+														</h4>
+						
+			 
+											
+					<div>
+				<span class="product-reference text-body-secondary"><strong>C&oacute;digo:</strong> AEQ-110BW-9A</span>
+	
+				<!-- Stock -->
+							</div>
+		
+		<!-- BEGIN ADD TO CART --> 
+		<div class="my-3">
+												
+					
+<!-- Content for Popover -->
+<div style="" id="main-select-quantity">
+	<div class="popover-header">
+		Elegir Cantidad
+		  	</div>							
+	
+	<div class="popover-body">
+			  		<div class="text-center d-none">
+		  				  		
+		  				  			<div>
+			  			<h6>Paquetes</h6>
+			  		
+			  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="1" data-loading-text="Guardando...">
+	  			<span>1</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="2" data-loading-text="Guardando...">
+	  			<span>2</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="3" data-loading-text="Guardando...">
+	  			<span>3</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="4" data-loading-text="Guardando...">
+	  			<span>4</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="5" data-loading-text="Guardando...">
+	  			<span>5</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="6" data-loading-text="Guardando...">
+	  			<span>6</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="7" data-loading-text="Guardando...">
+	  			<span>7</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="8" data-loading-text="Guardando...">
+	  			<span>8</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="9" data-loading-text="Guardando...">
+	  			<span>9</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="10" data-loading-text="Guardando...">
+	  			<span>10</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="11" data-loading-text="Guardando...">
+	  			<span>11</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="12" data-loading-text="Guardando...">
+	  			<span>12</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="13" data-loading-text="Guardando...">
+	  			<span>13</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="14" data-loading-text="Guardando...">
+	  			<span>14</span>
+	  				  		</a>
+	  				
+  			  			<a href="#" class="btn btn-sm btn-secondary mb-1 me-1 addQuantityToCart" data-product-id="92013" data-quantity="15" data-loading-text="Guardando...">
+	  			<span>15</span>
+	  				  		</a>
+	  				
+  										  		
+			  		</div>
+		  				  		
+		  			  		</div>
+
+	  		<div style="margin-top: 10px;" class="chooseQuantityContainer" data-reload-on-change-quantity="0">
+	  			<div class="row">
+	  				<div class="col-md-12 ">
+			  			<div class="">
+			  					
+								<input type="number" tabindex="0" min="0" step="1" class="form-control quantity" data-product-id="92013" value="" placeholder="Cantidad...">
+    						    <button class="btn btn-primary addQuantityToCart mt-3" type="button" data-loading-text="Cargando..." data-product-id="92013">					        
+									Agregar al Carrito    							</button>
+					      						    </div>
+                        
+						<a href="#" class="btn btn-sm btn-link addQuantityToCart" data-product-id="92013" data-quantity="0" data-product-attribute-id="-1" data-loading-text="Borrando...">o quitar del carrito</a>
+				    </div>
+			    </div>
+		    </div>
+  		  		
+  	</div>
+</div>					
+														</div>
+		<!-- END ADD TO CART --> 
+ 
+					
+		<!-- Atributos -->
+		    					
+			
+		<p class="product-description"></p>
+	</div>
+</div>
+
+	    
+<script type="text/javascript" src="/js/jquery.zoom.min.js?1719494279"></script><script type="text/javascript" src="/js/select2.min.js?1646424023"></script><script type="text/javascript" src="/js/catalogs.js?1767812506"></script><script type="text/javascript" src="/js/catalogs_product.js?1680272756"></script><link rel="stylesheet" type="text/css" href="/css/select2.css?1646424022"/><link rel="stylesheet" type="text/css" href="/css/select2-bootstrap.css?1646425226"/>	    </div> <!-- /container -->	   
+	</main>
+	
+	
+	<footer id="footer" class="d-print-none bg-dark">
+	<div class="container">
+		<div class="row">
+			<div class="col-12 col-md mt-3">
+								
+											<h4>Contacto</h4>
+										
+					<address class="mb-1">
+													
+															        								<span>Watchland</span>
+        								<br/>
+    																													
+															        								<a href="mailto:envio.facturas@watch-land.com.ar">envio.facturas@watch-land.com.ar</a>
+        								<br/>
+    																													
+																				
+																									<div>
+											<a href="tel:%2B5411+4857+3834">+5411 4857 3834</a>
+										</div>
+    																													
+																
+					</address>
+					
+											<img src="/files/company/image//37/image_1700753025.jpg" style="margin-top: 1em; max-height: 55px; max-width: 100px;"/>
+												</div>
+					
+		
+    																</div>
+		
+			</div>
+	<div class="container-fluid">
+    	<div class="row footer-copyright">
+    		<div class="col text-end">
+    			<p>
+    				<small>
+    					Desarrollado por  <a href="https://www.smartycart.com.ar/" target="_new" role="button" title="Ir a www.SmartyCart.com.ar"><img src="/img/logo.png" class="thumbnail rounded" alt="SmartyCart" style="display:inline-block;width: 50px;margin-bottom:0;/*margin-right:29px;*/"/></a></a>
+					</small>
+    			</p>				
+    		</div>
+    	</div>
+	</div>
+</footer>
+
+
+	<a class="btn-whatsapp-fixed js-whatsapp-contact" target="_new" href="https://api.whatsapp.com/send?phone=&amp;text=Hola, quisiera realizar una consulta." aria-label="Whatsapp">		
+		<span class="">Cont&aacute;ctenos&nbsp;</span><img src="/img/whatsapp_icon_white_64.png" width="24px" alt="Whatsapp"/> 
+	</a>
+	
+			
+			
+	
+	<script type="text/javascript" src="/js/lazysizes.min.js?1645213070" async="async"></script><script type="text/javascript" src="/js/swiper.min.js?1733326599" defer="defer"></script>	
+				<script async src="https://www.googletagmanager.com/gtag/js?id=G-NTPKC5PN13"></script> 
+			<script>
+				if(typeof gtag == 'undefined') {
+					window.dataLayer = window.dataLayer || [];
+					function gtag(){dataLayer.push(arguments);}
+				}
+
+									gtag('config', 'G-NTPKC5PN13', {"user_id":"42164"});
+							</script>
+				<script>
+		window.dataLayer = window.dataLayer || [];
+		gtag('js', new Date());
+		if(typeof gtag == 'undefined') {
+			function gtag(){dataLayer.push(arguments);}
+		}
+
+									gtag('event', 'view_item', {
+								'event_label':  'Vista Producto',
+								//'currency': "ARS",
+								//'value': price,
+								'view_type': 'page', // Diferenciador clave
+								'items': [{
+									'item_id': '92013',
+									'item_reference': 'AEQ-110BW-9A',
+									'item_name': 'RELOJ CASIO'
+									//'price': price
+								}]
+							});		
+								</script>
+
+
+<script>
+
+if(typeof report_whatsapp_conversion == 'undefined') {
+		function report_whatsapp_conversion(url) {
+			var callback = function () {
+				if (typeof(url) != 'undefined') {
+			    	window.location = url;
+				}
+			};
+									gtag('event', 'conversion', {
+							'send_to': 'G-NTPKC5PN13' /* '/CONVERSION_LABEL' */,
+							'event_label':  'Contacto por Whatsapp',
+							'event_category': 'engagement',
+							'event_callback': callback
+						});				
+								}
+	}
+		
+	const wappBtns = document.querySelectorAll('.js-whatsapp-contact');
+	if(wappBtns) {
+		wappBtns.forEach(btn => {
+			btn.addEventListener('click', () => report_whatsapp_conversion());
+		});
+	}
+
+
+	if(typeof report_add_to_cart == 'undefined') {
+		function report_add_to_cart(val, productIds) {
+									//console.log('Report "Add to cart" ' + val);
+						gtag('event', 'add_to_cart', {
+							'send_to': 'G-NTPKC5PN13' /* '/CONVERSION_LABEL' */,
+							'event_label':  'Agregar al Carrito',
+							currency: "ARS",
+  							value: val,
+						});				
+								}
+	}
+
+
+
+	if(typeof report_view_item_modal == 'undefined') {
+		function report_view_item_modal(prodId, prodRef, prodName) {
+									//console.log('Report "Add to cart" ' + val);
+						gtag('event', 'view_item', {
+							'send_to': 'G-NTPKC5PN13' /* '/CONVERSION_LABEL' */,
+							'event_label':  'Vista Producto (Modal)',
+							//'currency': "ARS",
+  							//'value': price,
+							'view_type': 'modal', // Diferenciador clave
+							'items': [{
+								'item_id': prodId,
+								'item_reference': prodRef.trim(),
+								'item_name': prodName.trim()
+								//'price': price
+							}]
+						});				
+								}
+	}
+	
+</script>
+	</body>
+</html>
