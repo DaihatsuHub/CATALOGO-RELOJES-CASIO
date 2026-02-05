@@ -25,11 +25,7 @@ body{
   align-items:center;
   z-index:1000;
 }
-#topbar button{ 
-  padding:6px 12px; 
-  cursor:pointer; 
-  transition: background .3s;
-}
+#topbar button{ padding:6px 12px; cursor:pointer; }
 #resumen{ margin-left:auto; font-weight:bold; }
 
 /* ===== GRID ===== */
@@ -60,7 +56,6 @@ body{
 }
 .precio{
   font-weight:bold;
-  text-align:center;
   margin:6px 0 10px 0;
 }
 
@@ -74,7 +69,6 @@ input[type=number]{ width:70px; }
   inset:0;
   background:rgba(0,0,0,.6);
   z-index:2000;
-  overflow:auto;
 }
 #modalContent{
   background:#fff;
@@ -83,8 +77,6 @@ input[type=number]{ width:70px; }
   margin:80px auto;
   padding:15px;
   border-radius:8px;
-  max-height:80%;
-  overflow:auto;
 }
 #cerrar{
   float:right;
@@ -120,11 +112,6 @@ th,td{
 
 textarea, input[type=text]{ width:100%; }
 input[type=date]{ width:150px; }
-
-.boton-activo{
-  background:green !important;
-  color:#fff !important;
-}
 </style>
 </head>
 
@@ -133,8 +120,8 @@ input[type=date]{ width:150px; }
 <div id="topbar">
   <strong>📦 Catálogo</strong>
   <input type="text" id="busqueda" placeholder="Buscar código..." oninput="filtrar()" style="padding:6px">
-  <button id="btnPDF" onclick="guardarPDF()">📄 Guardar en PDF</button>
-  <button id="btnCarrito" onclick="abrirCarrito()">🛒 Ver carrito</button>
+  <button onclick="guardarPDF()">📄 Guardar en PDF</button>
+  <button onclick="abrirCarrito()">🛒 Ver carrito</button>
   <div id="resumen">Cantidad: 0 | Total: $ 0.00</div>
 </div>
 
@@ -153,7 +140,7 @@ Observaciones:<br>
 <div id="estado"></div>
 <div id="catalogo" class="grid"></div>
 
-<!-- ===== MODAL CARRITO ===== -->
+<!-- ===== MODAL ===== -->
 <div id="modal">
   <div id="modalContent">
     <span id="cerrar" onclick="cerrarCarrito()">❌</span>
@@ -168,14 +155,11 @@ Observaciones:<br>
 let productos=[];
 let carrito=[];
 
-const btnPDF = document.getElementById("btnPDF");
-const btnCarrito = document.getElementById("btnCarrito");
-
 fecha.value = new Date().toISOString().split("T")[0];
 
 /* ===== CARGA CSV ===== */
 window.addEventListener("load",()=>{
-  fetch("stock.csv")
+  fetch("stock.csv",{cache:"no-store"})
     .then(r=>r.text())
     .then(txt=>{
       estado.innerText="Stock cargado automáticamente ✔";
@@ -198,26 +182,22 @@ function cargarCSV(txt){
   filas.forEach((f,i)=>{
     const c=f.split(";");
     if(c.length<2) return;
+
     const codigo=c[0].trim();
     const precio=parseFloat(c[1].replace(",","."))||0;
-    if(!codigo||isNaN(precio)) return;
+    if(!codigo) return;
+
+    const letra = codigo[0].toUpperCase();
+    const carpeta = letra >= "M" ? "FOTOS2" : "FOTOS";
 
     productos.push({
       id:i,
       codigo,
       precio,
-
-      const carpeta = codigo[0].toUpperCase() >= "M" ? "FOTOS2" : "FOTOS";
-
-      productos.push({
-      id:i,
-      codigo,
-      precio,
       img: carpeta + "/" + codigo + ".jpg"
-     });
-
     });
   });
+
   dibujar();
 }
 
@@ -254,8 +234,7 @@ function cambiar(id){
 
 function mostrarCarrito(){
   if(!carrito.length){
-    lista.innerText="Vacío";
-    return;
+    lista.innerText="Vacío"; return;
   }
   let t=0;
   let h="<table><tr><th>Código</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr>";
@@ -271,14 +250,6 @@ function actualizarResumen(){
   let c=0,t=0;
   carrito.forEach(i=>{c+=i.cant; t+=i.cant*i.precio;});
   resumen.innerText=`Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
-
-  if(t>0){
-    btnPDF.classList.add("boton-activo");
-    btnCarrito.classList.add("boton-activo");
-  }else{
-    btnPDF.classList.remove("boton-activo");
-    btnCarrito.classList.remove("boton-activo");
-  }
 }
 
 function abrirCarrito(){ modal.style.display="block"; }
@@ -292,47 +263,32 @@ function filtrar(){
   });
 }
 
-window.addEventListener("scroll",()=>{ volverArriba.style.display=window.scrollY>300?"block":"none"; });
+window.addEventListener("scroll",()=>{
+  volverArriba.style.display=window.scrollY>300?"block":"none";
+});
 
 function guardarPDF(){
   if(!carrito.length){ alert("Carrito vacío"); return; }
-  if(!razon.value.trim()){ alert("Debe ingresar la Razón Social"); razon.focus(); return; }
-
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   let y=15;
 
-  const f=new Date(fecha.value);
-  const fechaOK=`${String(f.getDate()).padStart(2,"0")}/${String(f.getMonth()+1).padStart(2,"0")}/${String(f.getFullYear()).slice(-2)}`;
-
   doc.setFont("helvetica","bold");
   doc.text("PEDIDO CASIO",10,y); y+=10;
   doc.text(`Razón Social: ${razon.value}`,10,y); y+=8;
-  doc.setFont("helvetica","normal");
-  doc.text(`Fecha: ${fechaOK}`,10,y); y+=10;
+  doc.text(`Fecha: ${fecha.value}`,10,y); y+=10;
 
-  doc.setFont("helvetica","bold");
-  doc.rect(10,y,50,8); doc.rect(60,y,20,8); doc.rect(80,y,30,8); doc.rect(110,y,40,8);
-  doc.text("Código",12,y+5); doc.text("Cant",62,y+5); doc.text("Precio",82,y+5); doc.text("Subtotal",112,y+5);
-  y+=8;
+  doc.text("Código | Cant | Precio | Subtotal",10,y); y+=8;
 
-  doc.setFont("helvetica","normal");
   let total=0;
   carrito.forEach(i=>{
     const s=i.cant*i.precio; total+=s;
-    doc.rect(10,y,50,8); doc.rect(60,y,20,8); doc.rect(80,y,30,8); doc.rect(110,y,40,8);
-    doc.text(i.codigo,12,y+5);
-    doc.text(String(i.cant),62,y+5);
-    doc.text("$ "+i.precio.toFixed(2),82,y+5);
-    doc.text("$ "+s.toFixed(2),112,y+5);
+    doc.text(`${i.codigo}  ${i.cant}  $${i.precio.toFixed(2)}  $${s.toFixed(2)}`,10,y);
     y+=8;
   });
 
-  doc.setFont("helvetica","bold");
   doc.text(`TOTAL: $ ${total.toFixed(2)}`,10,y+5);
-
-  const nombre=`PEDIDO_CASIO_${razon.value.replace(/\s+/g,"_").toUpperCase()}_${fechaOK.replace(/\//g,"-")}.pdf`;
-  doc.save(nombre);
+  doc.save("pedido_casio.pdf");
 }
 </script>
 
