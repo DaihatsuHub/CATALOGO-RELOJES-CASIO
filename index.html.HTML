@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo Relojes</title>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<style>
+body{
+  font-family: Arial;
+  margin:100px 20px 20px 20px;
+}
+
+/* ===== BARRA SUPERIOR ===== */
+#topbar{
+  position:fixed;
+  top:0; left:0; right:0;
+  background:#222;
+  color:#fff;
+  padding:10px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  z-index:1000;
+}
+#topbar button{ 
+  padding:6px 12px; 
+  cursor:pointer; 
+  transition: background .3s;
+}
+#resumen{ margin-left:auto; font-weight:bold; }
+
+/* ===== GRID ===== */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:10px;
+}
+.card{
+  border:1px solid #ccc;
+  padding:10px;
+  text-align:center;
+}
+.codigo{
+  background:#bfe6ff;
+  font-weight:bold;
+  padding:4px;
+}
+.card img{
+  max-width:100%;
+  height:168px;
+  object-fit:contain;
+  margin:6px 0;
+  transition:transform .3s;
+}
+.card:hover img{
+  transform:scale(1.4);
+}
+.precio{
+  font-weight:bold;
+  text-align:center;
+  margin:6px 0 10px 0;
+}
+
+input[type=number]{ width:70px; }
+.seleccionado{ background:orange; }
+
+/* ===== MODAL ===== */
+#modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  z-index:2000;
+  overflow:auto;
+}
+#modalContent{
+  background:#fff;
+  width:90%;
+  max-width:600px;
+  margin:80px auto;
+  padding:15px;
+  border-radius:8px;
+  max-height:80%;
+  overflow:auto;
+}
+#cerrar{
+  float:right;
+  cursor:pointer;
+  font-size:18px;
+}
+
+/* ===== TABLA ===== */
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  border:1px solid #ccc;
+  padding:6px;
+  text-align:center;
+}
+
+/* ===== BOTÓN ARRIBA ===== */
+#volverArriba{
+  position:fixed;
+  right:15px;
+  bottom:20px;
+  font-size:36px;
+  cursor:pointer;
+  background:#222;
+  color:#fff;
+  padding:10px 14px;
+  border-radius:50%;
+  display:none;
+  z-index:1500;
+}
+
+textarea, input[type=text]{ width:100%; }
+input[type=date]{ width:150px; }
+
+.boton-activo{
+  background:green !important;
+  color:#fff !important;
+}
+</style>
+</head>
+
+<body>
+
+<div id="topbar">
+  <strong>📦 Catálogo</strong>
+  <input type="text" id="busqueda" placeholder="Buscar código..." oninput="filtrar()" style="padding:6px">
+  <button id="btnPDF" onclick="guardarPDF()">📄 Guardar en PDF</button>
+  <button id="btnCarrito" onclick="abrirCarrito()">🛒 Ver carrito</button>
+  <div id="resumen">Cantidad: 0 | Total: $ 0.00</div>
+</div>
+
+<h2>Datos del pedido</h2>
+Razón Social:<br>
+<input type="text" id="razon"><br><br>
+
+Fecha:<br>
+<input type="date" id="fecha"><br><br>
+
+Observaciones:<br>
+<textarea id="obs" rows="3"></textarea>
+
+<hr>
+
+<div id="estado"></div>
+<div id="catalogo" class="grid"></div>
+
+<!-- ===== MODAL CARRITO ===== -->
+<div id="modal">
+  <div id="modalContent">
+    <span id="cerrar" onclick="cerrarCarrito()">❌</span>
+    <h3>🛒 Carrito</h3>
+    <div id="lista">Vacío</div>
+  </div>
+</div>
+
+<div id="volverArriba" onclick="window.scrollTo({top:0,behavior:'smooth'})">⬆</div>
+
+<script>
+let productos=[];
+let carrito=[];
+
+const btnPDF = document.getElementById("btnPDF");
+const btnCarrito = document.getElementById("btnCarrito");
+
+fecha.value = new Date().toISOString().split("T")[0];
+
+/* ===== CARGA CSV ===== */
+window.addEventListener("load",()=>{
+  fetch("stock.csv")
+    .then(r=>r.text())
+    .then(txt=>{
+      estado.innerText="Stock cargado automáticamente ✔";
+      cargarCSV(txt);
+    })
+    .catch(()=>{ estado.innerText="No se pudo cargar stock"; });
+});
+
+function cargarCSV(txt){
+  productos=[];
+  carrito=[];
+  catalogo.innerHTML="";
+  lista.innerHTML="Vacío";
+  actualizarResumen();
+
+  txt=txt.replace(/^\uFEFF/,"").replace(/\r/g,"").trim();
+  const filas=txt.split("\n");
+  filas.shift();
+
+  filas.forEach((f,i)=>{
+    const c=f.split(";");
+    if(c.length<2) return;
+    const codigo=c[0].trim();
+    const precio=parseFloat(c[1].replace(",","."))||0;
+    if(!codigo||isNaN(precio)) return;
+
+    productos.push({
+      id:i,
+      codigo,
+      precio,
+
+      const carpeta = codigo[0].toUpperCase() >= "M" ? "FOTOS2" : "FOTOS";
+
+      productos.push({
+      id:i,
+      codigo,
+      precio,
+      img: carpeta + "/" + codigo + ".jpg"
+     });
+
+    });
+  });
+  dibujar();
+}
+
+function dibujar(){
+  let h="";
+  productos.forEach(p=>{
+    h+=`
+    <div class="card">
+      <div class="codigo">${p.codigo}</div>
+      <img src="${p.img}" onerror="this.style.display='none'">
+      <div class="precio">$ ${p.precio.toFixed(2)}</div>
+      <input type="number" min="0" value="0" id="q${p.id}" onchange="cambiar(${p.id})">
+    </div>`;
+  });
+  catalogo.innerHTML=h;
+}
+
+function cambiar(id){
+  const i=document.getElementById("q"+id);
+  const cant=parseInt(i.value)||0;
+  const p=productos.find(x=>x.id===id);
+
+  carrito=carrito.filter(x=>x.id!==id);
+
+  if(cant>0){
+    carrito.push({id,codigo:p.codigo,cant,precio:p.precio});
+    i.classList.add("seleccionado");
+  }else{
+    i.classList.remove("seleccionado");
+  }
+  mostrarCarrito();
+  actualizarResumen();
+}
+
+function mostrarCarrito(){
+  if(!carrito.length){
+    lista.innerText="Vacío";
+    return;
+  }
+  let t=0;
+  let h="<table><tr><th>Código</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr>";
+  carrito.forEach(i=>{
+    let s=i.cant*i.precio; t+=s;
+    h+=`<tr><td>${i.codigo}</td><td>${i.cant}</td><td>$ ${i.precio.toFixed(2)}</td><td>$ ${s.toFixed(2)}</td></tr>`;
+  });
+  h+=`<tr><td colspan="3"><b>Total</b></td><td><b>$ ${t.toFixed(2)}</b></td></tr></table>`;
+  lista.innerHTML=h;
+}
+
+function actualizarResumen(){
+  let c=0,t=0;
+  carrito.forEach(i=>{c+=i.cant; t+=i.cant*i.precio;});
+  resumen.innerText=`Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
+
+  if(t>0){
+    btnPDF.classList.add("boton-activo");
+    btnCarrito.classList.add("boton-activo");
+  }else{
+    btnPDF.classList.remove("boton-activo");
+    btnCarrito.classList.remove("boton-activo");
+  }
+}
+
+function abrirCarrito(){ modal.style.display="block"; }
+function cerrarCarrito(){ modal.style.display="none"; }
+
+function filtrar(){
+  const txt = busqueda.value.toLowerCase();
+  document.querySelectorAll(".card").forEach(c=>{
+    const cod = c.querySelector(".codigo").innerText.toLowerCase();
+    c.style.display = cod.includes(txt) ? "" : "none";
+  });
+}
+
+window.addEventListener("scroll",()=>{ volverArriba.style.display=window.scrollY>300?"block":"none"; });
+
+function guardarPDF(){
+  if(!carrito.length){ alert("Carrito vacío"); return; }
+  if(!razon.value.trim()){ alert("Debe ingresar la Razón Social"); razon.focus(); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y=15;
+
+  const f=new Date(fecha.value);
+  const fechaOK=`${String(f.getDate()).padStart(2,"0")}/${String(f.getMonth()+1).padStart(2,"0")}/${String(f.getFullYear()).slice(-2)}`;
+
+  doc.setFont("helvetica","bold");
+  doc.text("PEDIDO CASIO",10,y); y+=10;
+  doc.text(`Razón Social: ${razon.value}`,10,y); y+=8;
+  doc.setFont("helvetica","normal");
+  doc.text(`Fecha: ${fechaOK}`,10,y); y+=10;
+
+  doc.setFont("helvetica","bold");
+  doc.rect(10,y,50,8); doc.rect(60,y,20,8); doc.rect(80,y,30,8); doc.rect(110,y,40,8);
+  doc.text("Código",12,y+5); doc.text("Cant",62,y+5); doc.text("Precio",82,y+5); doc.text("Subtotal",112,y+5);
+  y+=8;
+
+  doc.setFont("helvetica","normal");
+  let total=0;
+  carrito.forEach(i=>{
+    const s=i.cant*i.precio; total+=s;
+    doc.rect(10,y,50,8); doc.rect(60,y,20,8); doc.rect(80,y,30,8); doc.rect(110,y,40,8);
+    doc.text(i.codigo,12,y+5);
+    doc.text(String(i.cant),62,y+5);
+    doc.text("$ "+i.precio.toFixed(2),82,y+5);
+    doc.text("$ "+s.toFixed(2),112,y+5);
+    y+=8;
+  });
+
+  doc.setFont("helvetica","bold");
+  doc.text(`TOTAL: $ ${total.toFixed(2)}`,10,y+5);
+
+  const nombre=`PEDIDO_CASIO_${razon.value.replace(/\s+/g,"_").toUpperCase()}_${fechaOK.replace(/\//g,"-")}.pdf`;
+  doc.save(nombre);
+}
+</script>
+
+</body>
+</html>
