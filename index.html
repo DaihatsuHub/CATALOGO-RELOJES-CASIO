@@ -21,7 +21,7 @@ body{
   color:#fff;
   padding:10px;
   display:flex;
-  gap:12px;
+  gap:10px;
   align-items:center;
   z-index:1000;
 }
@@ -38,7 +38,7 @@ body{
   border:1px solid #ccc;
   padding:10px;
   text-align:center;
-  overflow:visible; /* CLAVE para el zoom */
+  overflow:visible;
 }
 .codigo{
   background:#bfe6ff;
@@ -50,16 +50,16 @@ body{
   height:168px;
   object-fit:contain;
   margin:6px 0;
-  transition:transform .3s ease;
+  transition:transform .3s;
 }
 .card:hover img{
   transform:scale(1.5);
-  z-index:10;
 }
 .precio{
   font-weight:bold;
   margin:6px 0 10px 0;
 }
+
 input[type=number]{ width:70px; }
 .seleccionado{ background:orange; }
 
@@ -81,7 +81,6 @@ input[type=number]{ width:70px; }
 }
 #cerrar{ float:right; cursor:pointer; }
 
-/* ===== TABLE ===== */
 table{
   width:100%;
   border-collapse:collapse;
@@ -104,20 +103,16 @@ th,td{
 <div id="topbar">
   <strong>📦 Catálogo</strong>
   <input type="text" id="busqueda" placeholder="Buscar código..." oninput="filtrar()">
-  <button id="btnPDF">📄 Guardar en PDF</button>
-  <button id="btnCarrito">🛒 Ver carrito</button>
+  <button onclick="descargarCatalogoPDF()">📘 Descargar Catálogo</button>
+  <button id="btnPDF">📄 Pedido PDF</button>
+  <button id="btnCarrito">🛒 Carrito</button>
   <div id="resumen">Cantidad: 0 | Total: $ 0.00</div>
 </div>
 
 <h2>Datos del pedido</h2>
-Razón Social:<br>
-<input type="text" id="razon"><br><br>
-
-Fecha:<br>
-<input type="date" id="fecha"><br><br>
-
-Observaciones:<br>
-<textarea id="obs" rows="3"></textarea>
+Razón Social:<br><input type="text" id="razon"><br><br>
+Fecha:<br><input type="date" id="fecha"><br><br>
+Observaciones:<br><textarea id="obs" rows="3"></textarea>
 
 <hr>
 
@@ -134,7 +129,8 @@ Observaciones:<br>
 </div>
 
 <script>
-/* ===== REFERENCIAS ===== */
+const { jsPDF } = window.jspdf;
+
 const btnPDF = document.getElementById("btnPDF");
 const btnCarrito = document.getElementById("btnCarrito");
 const modal = document.getElementById("modal");
@@ -150,49 +146,43 @@ let carrito=[];
 
 fecha.value = new Date().toISOString().split("T")[0];
 
-/* ===== CSV AUTOMÁTICO ===== */
+/* ===== CSV ===== */
 window.addEventListener("load",()=>{
   fetch("stock.csv")
     .then(r=>r.text())
     .then(txt=>{
-      estado.innerText="Stock cargado automáticamente ✔";
+      estado.innerText="Stock cargado ✔";
       cargarCSV(txt);
     })
     .catch(()=>estado.innerText="No se pudo cargar stock");
 });
 
 function cargarCSV(txt){
-  productos=[];
-  carrito=[];
-  catalogo.innerHTML="";
-  lista.innerHTML="Vacío";
-  actualizarResumen();
-
   txt=txt.replace(/^\uFEFF/,"").replace(/\r/g,"").trim();
   const filas=txt.split("\n");
   filas.shift();
 
+  productos=[];
   filas.forEach((f,i)=>{
     const c=f.split(";");
     if(c.length<2) return;
 
     const codigo=c[0].trim();
     const precio=parseFloat(c[1].replace(",","."))||0;
-
-    const carpeta = codigo[0].toUpperCase() >= "M" ? "FOTOS2" : "FOTOS";
+    const carpeta = codigo[0].toUpperCase()>="M" ? "FOTOS2" : "FOTOS";
 
     productos.push({
       id:i,
       codigo,
       precio,
-      img: carpeta + "/" + codigo + ".jpg"
+      img:`${carpeta}/${codigo}.jpg`
     });
   });
   dibujar();
 }
 
 function dibujar(){
-  catalogo.innerHTML = productos.map(p=>`
+  catalogo.innerHTML=productos.map(p=>`
     <div class="card">
       <div class="codigo">${p.codigo}</div>
       <img src="${p.img}" onerror="this.style.display='none'">
@@ -203,45 +193,32 @@ function dibujar(){
 }
 
 function cambiar(id){
-  const input=document.getElementById("q"+id);
-  const cant=parseInt(input.value)||0;
+  const i=document.getElementById("q"+id);
+  const cant=parseInt(i.value)||0;
   const p=productos.find(x=>x.id===id);
 
-  carrito = carrito.filter(x=>x.id!==id);
-
+  carrito=carrito.filter(x=>x.id!==id);
   if(cant>0){
     carrito.push({id,codigo:p.codigo,cant,precio:p.precio});
-    input.classList.add("seleccionado");
-  }else{
-    input.classList.remove("seleccionado");
-  }
+    i.classList.add("seleccionado");
+  }else i.classList.remove("seleccionado");
 
   mostrarCarrito();
   actualizarResumen();
 }
 
 function mostrarCarrito(){
-  if(!carrito.length){
-    lista.innerText="Vacío";
-    return;
-  }
+  if(!carrito.length){ lista.innerText="Vacío"; return; }
   let total=0;
-  lista.innerHTML = `
+  lista.innerHTML=`
     <table>
-      <tr><th>Código</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr>
+      <tr><th>Código</th><th>Cant</th><th>Precio</th><th>Subtotal</th></tr>
       ${carrito.map(i=>{
-        const s=i.cant*i.precio;
-        total+=s;
-        return `<tr>
-          <td>${i.codigo}</td>
-          <td>${i.cant}</td>
-          <td>$ ${i.precio.toFixed(2)}</td>
-          <td>$ ${s.toFixed(2)}</td>
-        </tr>`;
+        const s=i.cant*i.precio; total+=s;
+        return `<tr><td>${i.codigo}</td><td>${i.cant}</td><td>$ ${i.precio.toFixed(2)}</td><td>$ ${s.toFixed(2)}</td></tr>`;
       }).join("")}
       <tr><td colspan="3"><b>Total</b></td><td><b>$ ${total.toFixed(2)}</b></td></tr>
-    </table>
-  `;
+    </table>`;
 }
 
 function actualizarResumen(){
@@ -256,24 +233,49 @@ btnCarrito.onclick=()=>modal.style.display="block";
 cerrar.onclick=()=>modal.style.display="none";
 
 function filtrar(){
-  const txt=busqueda.value.toLowerCase();
+  const t=busqueda.value.toLowerCase();
   document.querySelectorAll(".card").forEach(c=>{
-    c.style.display = c.querySelector(".codigo").innerText.toLowerCase().includes(txt) ? "" : "none";
+    c.style.display=c.querySelector(".codigo").innerText.toLowerCase().includes(t)?"":"none";
   });
 }
 
-btnPDF.onclick=()=>{
-  if(!carrito.length){ alert("Carrito vacío"); return; }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  let y=15;
-  doc.text("PEDIDO RELOJES CASIO",10,y); y+=10;
-  carrito.forEach(i=>{
-    doc.text(`${i.codigo} x${i.cant}`,10,y);
-    y+=7;
+/* ===== PDF CATÁLOGO ===== */
+async function descargarCatalogoPDF(){
+  const doc=new jsPDF();
+  let x=10,y=15;
+
+  doc.setFont("helvetica","bold");
+  doc.text("CATÁLOGO RELOJES CASIO",10,y);
+  y+=10;
+
+  doc.setFont("helvetica","normal");
+
+  for(const p of productos){
+    if(y>270){ doc.addPage(); y=15; }
+
+    doc.text(p.codigo,10,y);
+    doc.text("$ "+p.precio.toFixed(2),60,y);
+
+    try{
+      const img=await cargarImagen(p.img);
+      doc.addImage(img,"JPEG",100,y-6,30,30);
+      y+=34;
+    }catch{
+      y+=8;
+    }
+  }
+  doc.save("CATALOGO_CASIO.pdf");
+}
+
+function cargarImagen(src){
+  return new Promise((ok,fail)=>{
+    const img=new Image();
+    img.crossOrigin="anonymous";
+    img.onload=()=>ok(img);
+    img.onerror=fail;
+    img.src=src;
   });
-  doc.save("PEDIDO_CASIO.pdf");
-};
+}
 </script>
 
 </body>
