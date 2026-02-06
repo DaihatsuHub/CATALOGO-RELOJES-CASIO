@@ -38,7 +38,6 @@ body{
   border:1px solid #ccc;
   padding:10px;
   text-align:center;
-  overflow:visible;
 }
 .codigo{
   background:#bfe6ff;
@@ -53,11 +52,11 @@ body{
   transition:transform .3s;
 }
 .card:hover img{
-  transform:scale(1.5);
+  transform:scale(1.4);
 }
 .precio{
   font-weight:bold;
-  margin:6px 0 10px 0;
+  margin-bottom:8px;
 }
 
 input[type=number]{ width:70px; }
@@ -77,7 +76,6 @@ input[type=number]{ width:70px; }
   max-width:600px;
   margin:80px auto;
   padding:15px;
-  border-radius:8px;
 }
 #cerrar{ float:right; cursor:pointer; }
 
@@ -131,31 +129,19 @@ Observaciones:<br><textarea id="obs" rows="3"></textarea>
 <script>
 const { jsPDF } = window.jspdf;
 
-const btnPDF = document.getElementById("btnPDF");
-const btnCarrito = document.getElementById("btnCarrito");
-const modal = document.getElementById("modal");
-const cerrar = document.getElementById("cerrar");
-const resumen = document.getElementById("resumen");
-const lista = document.getElementById("lista");
-const catalogo = document.getElementById("catalogo");
-const estado = document.getElementById("estado");
-const busqueda = document.getElementById("busqueda");
-
 let productos=[];
 let carrito=[];
 
-fecha.value = new Date().toISOString().split("T")[0];
+fecha.value=new Date().toISOString().split("T")[0];
 
 /* ===== CSV ===== */
-window.addEventListener("load",()=>{
-  fetch("stock.csv")
-    .then(r=>r.text())
-    .then(txt=>{
-      estado.innerText="Stock cargado ✔";
-      cargarCSV(txt);
-    })
-    .catch(()=>estado.innerText="No se pudo cargar stock");
-});
+fetch("stock.csv")
+.then(r=>r.text())
+.then(txt=>{
+  estado.innerText="Stock cargado ✔";
+  cargarCSV(txt);
+})
+.catch(()=>estado.innerText="No se pudo cargar stock");
 
 function cargarCSV(txt){
   txt=txt.replace(/^\uFEFF/,"").replace(/\r/g,"").trim();
@@ -166,17 +152,10 @@ function cargarCSV(txt){
   filas.forEach((f,i)=>{
     const c=f.split(";");
     if(c.length<2) return;
-
     const codigo=c[0].trim();
     const precio=parseFloat(c[1].replace(",","."))||0;
-    const carpeta = codigo[0].toUpperCase()>="M" ? "FOTOS2" : "FOTOS";
-
-    productos.push({
-      id:i,
-      codigo,
-      precio,
-      img:`${carpeta}/${codigo}.jpg`
-    });
+    const carpeta=codigo[0].toUpperCase()>="M"?"FOTOS2":"FOTOS";
+    productos.push({id:i,codigo,precio,img:`${carpeta}/${codigo}.jpg`});
   });
   dibujar();
 }
@@ -196,37 +175,31 @@ function cambiar(id){
   const i=document.getElementById("q"+id);
   const cant=parseInt(i.value)||0;
   const p=productos.find(x=>x.id===id);
-
   carrito=carrito.filter(x=>x.id!==id);
   if(cant>0){
     carrito.push({id,codigo:p.codigo,cant,precio:p.precio});
     i.classList.add("seleccionado");
   }else i.classList.remove("seleccionado");
-
-  mostrarCarrito();
-  actualizarResumen();
+  mostrarCarrito(); actualizarResumen();
 }
 
 function mostrarCarrito(){
   if(!carrito.length){ lista.innerText="Vacío"; return; }
-  let total=0;
-  lista.innerHTML=`
-    <table>
-      <tr><th>Código</th><th>Cant</th><th>Precio</th><th>Subtotal</th></tr>
-      ${carrito.map(i=>{
-        const s=i.cant*i.precio; total+=s;
-        return `<tr><td>${i.codigo}</td><td>${i.cant}</td><td>$ ${i.precio.toFixed(2)}</td><td>$ ${s.toFixed(2)}</td></tr>`;
-      }).join("")}
-      <tr><td colspan="3"><b>Total</b></td><td><b>$ ${total.toFixed(2)}</b></td></tr>
-    </table>`;
+  let t=0;
+  lista.innerHTML=`<table>
+    <tr><th>Código</th><th>Cant</th><th>Precio</th><th>Subtotal</th></tr>
+    ${carrito.map(i=>{
+      const s=i.cant*i.precio; t+=s;
+      return `<tr><td>${i.codigo}</td><td>${i.cant}</td><td>$ ${i.precio.toFixed(2)}</td><td>$ ${s.toFixed(2)}</td></tr>`;
+    }).join("")}
+    <tr><td colspan="3"><b>Total</b></td><td><b>$ ${t.toFixed(2)}</b></td></tr>
+  </table>`;
 }
 
 function actualizarResumen(){
   let c=0,t=0;
   carrito.forEach(i=>{c+=i.cant; t+=i.cant*i.precio});
   resumen.innerText=`Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
-  btnPDF.classList.toggle("boton-activo",t>0);
-  btnCarrito.classList.toggle("boton-activo",t>0);
 }
 
 btnCarrito.onclick=()=>modal.style.display="block";
@@ -239,41 +212,48 @@ function filtrar(){
   });
 }
 
-/* ===== PDF CATÁLOGO ===== */
+/* ===== PDF CATÁLOGO EN GRILLA ===== */
 async function descargarCatalogoPDF(){
-  const doc=new jsPDF();
-  let x=10,y=15;
+  const doc=new jsPDF("p","mm","a4");
+  let x0=10,y=20;
+  const col=8;
+  const cw=23,ch=32;
+  let x=x0,c=0;
 
   doc.setFont("helvetica","bold");
-  doc.text("CATÁLOGO RELOJES CASIO",10,y);
-  y+=10;
-
+  doc.text("CATÁLOGO RELOJES CASIO",10,10);
   doc.setFont("helvetica","normal");
 
   for(const p of productos){
-    if(y>270){ doc.addPage(); y=15; }
-
-    doc.text(p.codigo,10,y);
-    doc.text("$ "+p.precio.toFixed(2),60,y);
-
+    doc.rect(x,y,cw,ch);
+    doc.text(p.codigo,x+1,y+4,{maxWidth:cw-2});
     try{
-      const img=await cargarImagen(p.img);
-      doc.addImage(img,"JPEG",100,y-6,30,30);
-      y+=34;
-    }catch{
-      y+=8;
+      const img=await imgLow(p.img);
+      doc.addImage(img,"JPEG",x+1,y+6,21,21);
+    }catch{}
+    doc.text("$ "+p.precio.toFixed(2),x+1,y+30);
+
+    x+=cw; c++;
+    if(c===col){
+      c=0; x=x0; y+=ch+4;
+      if(y>260){ doc.addPage(); y=20; }
     }
   }
   doc.save("CATALOGO_CASIO.pdf");
 }
 
-function cargarImagen(src){
+function imgLow(src){
   return new Promise((ok,fail)=>{
-    const img=new Image();
-    img.crossOrigin="anonymous";
-    img.onload=()=>ok(img);
-    img.onerror=fail;
-    img.src=src;
+    const i=new Image();
+    i.crossOrigin="anonymous";
+    i.onload=()=>{
+      const c=document.createElement("canvas");
+      c.width=i.width; c.height=i.height;
+      c.getContext("2d").drawImage(i,0,0);
+      ok(c.toDataURL("image/jpeg",0.5));
+    };
+    i.onerror=fail;
+    i.src=src;
   });
 }
 </script>
