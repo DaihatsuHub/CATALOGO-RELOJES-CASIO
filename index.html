@@ -54,7 +54,6 @@ body{
 }
 .card:hover img{
   transform:scale(1.5);
-  z-index:10;
 }
 .precio{
   font-weight:bold;
@@ -151,7 +150,7 @@ let carrito=[];
 
 fecha.value = new Date().toISOString().split("T")[0];
 
-/* ===== CSV AUTOMÁTICO ===== */
+/* ===== CSV ===== */
 window.addEventListener("load",()=>{
   fetch("stock.csv")
     .then(r=>r.text())
@@ -248,8 +247,6 @@ function actualizarResumen(){
   let c=0,t=0;
   carrito.forEach(i=>{c+=i.cant; t+=i.cant*i.precio});
   resumen.innerText=`Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
-  btnPDF.classList.toggle("boton-activo",t>0);
-  btnCarrito.classList.toggle("boton-activo",t>0);
 }
 
 btnCarrito.onclick=()=>modal.style.display="block";
@@ -262,35 +259,40 @@ function filtrar(){
   });
 }
 
-/* ===== PDF CATÁLOGO COMPLETO ===== */
+/* ===== PDF CATÁLOGO ===== */
 btnCatalogo.onclick = async ()=>{
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p","mm","a4");
 
   const cols = 7;
   const cellW = 190 / cols;
-  const cellH = 38;
+  const cellH = 42;
   let x=10, y=10, col=0;
 
   for(const p of productos){
+    /* marco general */
+    doc.rect(x,y,cellW,cellH);
+
+    /* código */
     doc.setFillColor(191,230,255);
-    doc.rect(x,y,cellW,6,"F");
+    doc.rect(x,y,cellW,7,"F");
+    doc.setFont("helvetica","bold");
     doc.setFontSize(8);
-    doc.text(p.codigo, x+cellW/2, y+4,{align:"center"});
+    doc.text(p.codigo, x+cellW/2, y+5,{align:"center"});
 
-    if(p.img){
-      try{
-        const img = await fetch(p.img).then(r=>r.blob()).then(b=>new Promise(res=>{
-          const fr=new FileReader();
-          fr.onload=()=>res(fr.result);
-          fr.readAsDataURL(b);
-        }));
-        doc.addImage(img,"JPEG",x+2,y+8,cellW-4,18);
-      }catch{}
-    }
+    /* imagen */
+    try{
+      const img = await fetch(p.img).then(r=>r.blob()).then(b=>new Promise(res=>{
+        const fr=new FileReader();
+        fr.onload=()=>res(fr.result);
+        fr.readAsDataURL(b);
+      }));
+      doc.addImage(img,"JPEG",x+3,y+9,cellW-6,20,undefined,"FAST");
+    }catch{}
 
-    doc.setFontSize(8);
-    doc.text("$ "+p.precio.toFixed(2),x+cellW/2,y+30,{align:"center"});
+    /* precio */
+    doc.setFont("helvetica","bold");
+    doc.text("$ "+p.precio.toFixed(2),x+cellW/2,y+33,{align:"center"});
 
     col++;
     x+=cellW;
