@@ -104,7 +104,7 @@ th,td{
 <div id="topbar">
   <strong>📦 Catálogo</strong>
   <input type="text" id="busqueda" placeholder="Buscar código..." oninput="filtrar()">
-  <button id="btnPDF">📄 Guardar pedido PDF</button>
+  <button id="btnPDF">📥 Descargar Pedido</button>
   <button id="btnCatalogo">📘 Descargar Catálogo</button>
   <button id="btnCarrito">🛒 Ver carrito</button>
   <div id="resumen">Cantidad: 0 | Total: $ 0.00</div>
@@ -245,7 +245,7 @@ function mostrarCarrito(){
   `;
 }
 
-/* ===== BOTONES VERDES GARANTIZADO ===== */
+/* ===== BOTONES VERDES ===== */
 function actualizarResumen(){
   let c=0, t=0;
   carrito.forEach(i=>{
@@ -260,9 +260,6 @@ function actualizarResumen(){
     if(activo) b.classList.add("boton-activo");
     else b.classList.remove("boton-activo");
   });
-
-  /* FIX Chrome repaint */
-  document.body.offsetHeight;
 }
 
 btnCarrito.onclick=()=>modal.style.display="block";
@@ -276,7 +273,7 @@ function filtrar(){
   });
 }
 
-/* ===== PDF PEDIDO ===== */
+/* ===== PDF PEDIDO (TABLA COMO CARRITO) ===== */
 btnPDF.onclick=()=>{
   if(!carrito.length){ alert("Carrito vacío"); return; }
 
@@ -285,19 +282,20 @@ btnPDF.onclick=()=>{
 
   let y=10;
   doc.setFont("helvetica","bold");
-  doc.text("PEDIDO RELOJES CASIO",10,y); y+=10;
+  doc.text("PEDIDO RELOJES CASIO",10,y); y+=8;
 
   doc.setFont("helvetica","normal");
-  doc.text("Razón Social: "+razon.value,10,y); y+=8;
-  doc.text("Fecha: "+fecha.value,10,y); y+=8;
+  doc.text("Razón Social: "+razon.value,10,y); y+=6;
+  doc.text("Fecha: "+fecha.value,10,y); y+=6;
   doc.text("Observaciones: "+obs.value,10,y); y+=10;
 
+  /* encabezado tabla */
   doc.setFont("helvetica","bold");
   doc.text("Código",10,y);
-  doc.text("Cant",60,y);
-  doc.text("Precio",90,y);
-  doc.text("Subtotal",130,y);
-  y+=5;
+  doc.text("Cantidad",60,y);
+  doc.text("Precio",100,y);
+  doc.text("Subtotal",140,y);
+  y+=6;
 
   doc.setFont("helvetica","normal");
   let total=0;
@@ -306,9 +304,9 @@ btnPDF.onclick=()=>{
     total+=s;
     doc.text(i.codigo,10,y);
     doc.text(String(i.cant),60,y);
-    doc.text("$"+i.precio.toFixed(2),90,y);
-    doc.text("$"+s.toFixed(2),130,y);
-    y+=7;
+    doc.text("$"+i.precio.toFixed(2),100,y);
+    doc.text("$"+s.toFixed(2),140,y);
+    y+=6;
   });
 
   doc.setFont("helvetica","bold");
@@ -317,7 +315,7 @@ btnPDF.onclick=()=>{
   doc.save("PEDIDO_CASIO.pdf");
 };
 
-/* ===== PDF CATALOGO ===== */
+/* ===== PDF CATALOGO (NO TOCADO) ===== */
 btnCatalogo.onclick = async ()=>{
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p","mm","a4");
