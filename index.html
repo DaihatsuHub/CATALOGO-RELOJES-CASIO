@@ -23,6 +23,7 @@ button {
 
 .btn-disabled { background:#666; color:white; }
 .btn-active { background:#00a000; color:white; }
+.btn-working { background:red; color:white; }
 
 #search { padding:6px; width:250px; }
 
@@ -73,6 +74,7 @@ input[type=number] { width:60px; }
 <button id="btnExcel" class="btn-disabled">Guardar Excel</button>
 <button id="btnCarrito" class="btn-disabled">Ver Carrito</button>
 <button id="btnPDF" class="btn-disabled">Guardar Pedido PDF</button>
+<button id="btnCatalogo" class="btn-disabled">Descargar Catálogo</button>
 
 <div id="totalBox">Cantidad: 0 | Importe: $0</div>
 </div>
@@ -140,7 +142,7 @@ function actualizarTotal(){
   "Cantidad: "+totalCant+" | Importe: $"+totalImporte.toLocaleString();
 
  let activo = totalCant>0;
- ["btnExcel","btnCarrito","btnPDF"].forEach(id=>{
+ ["btnExcel","btnCarrito","btnPDF","btnCatalogo"].forEach(id=>{
   document.getElementById(id).className = activo ? "btn-active" : "btn-disabled";
  });
 }
@@ -153,7 +155,7 @@ document.getElementById("search").onkeyup = function(){
  ));
 };
 
-// ===== CARRITO POPUP =====
+// ===== CARRITO =====
 document.getElementById("btnCarrito").onclick = function(){
  if(Object.keys(carrito).length==0) return;
  let tabla="<tr><th>Código</th><th>Cantidad</th><th>Precio</th></tr>";
@@ -168,10 +170,25 @@ function cerrarCarrito(){
  document.getElementById("popup").style.display="none";
 }
 
+// ===== BOTON ESTADO =====
+function botonGrabando(id, grabando){
+ let btn=document.getElementById(id);
+ if(grabando){
+  btn.dataset.oldText = btn.innerText;
+  btn.innerText = "Grabando...";
+  btn.className = "btn-working";
+ } else {
+  btn.innerText = btn.dataset.oldText;
+  actualizarTotal();
+ }
+}
+
 // ===== PDF PEDIDO =====
 document.getElementById("btnPDF").onclick = function(){
  if(Object.keys(carrito).length==0) return;
+ botonGrabando("btnPDF", true);
 
+ setTimeout(()=>{
  const { jsPDF } = window.jspdf;
  let pdf = new jsPDF();
  let y=20;
@@ -190,9 +207,34 @@ document.getElementById("btnPDF").onclick = function(){
  }
 
  pdf.save("PEDIDO_CASIO.pdf");
+ botonGrabando("btnPDF", false);
+ },500);
 };
 
-// ===== CARGAR =====
+// ===== PDF CATALOGO (SIMPLE DEMO) =====
+document.getElementById("btnCatalogo").onclick = function(){
+ botonGrabando("btnCatalogo", true);
+
+ setTimeout(()=>{
+ const { jsPDF } = window.jspdf;
+ let pdf = new jsPDF();
+ let y=20;
+
+ pdf.setFontSize(14);
+ pdf.text("CATALOGO CASIO", 10, y); y+=10;
+
+ stock.forEach(p=>{
+  pdf.text(p.CODIGO+"  $"+p.PRECIO, 10, y);
+  y+=6;
+  if(y>280){ pdf.addPage(); y=20; }
+ });
+
+ pdf.save("CATALOGO_CASIO.pdf");
+ botonGrabando("btnCatalogo", false);
+ },500);
+};
+
+// ===== CARGAR CSV =====
 cargarCSV();
 </script>
 
