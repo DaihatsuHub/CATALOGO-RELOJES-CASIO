@@ -28,6 +28,11 @@ body{
 #topbar button{ padding:6px 12px; cursor:pointer; }
 #resumen{ margin-left:auto; font-weight:bold; }
 
+.boton-activo{
+  background:green !important;
+  color:#fff !important;
+}
+
 /* ===== GRID ===== */
 .grid{
   display:grid;
@@ -90,12 +95,6 @@ th,td{
   padding:6px;
   text-align:center;
 }
-
-/* ===== BOTONES ACTIVOS ===== */
-.boton-activo{
-  background:green !important;
-  color:#fff !important;
-}
 </style>
 </head>
 
@@ -145,11 +144,13 @@ const lista = document.getElementById("lista");
 const catalogo = document.getElementById("catalogo");
 const estado = document.getElementById("estado");
 const busqueda = document.getElementById("busqueda");
+const razon = document.getElementById("razon");
+const fecha = document.getElementById("fecha");
+const obs = document.getElementById("obs");
 
 let productos=[];
 let carrito=[];
 
-/* FECHA HOY */
 fecha.value = new Date().toISOString().split("T")[0];
 
 /* ===== CSV ===== */
@@ -198,8 +199,7 @@ function dibujar(){
       <div class="codigo">${p.codigo}</div>
       <img src="${p.img}" onerror="this.style.display='none'">
       <div class="precio">$ ${p.precio.toFixed(2)}</div>
-      <!-- CAMBIO CLAVE -->
-      <input type="number" min="0" value="0" id="q${p.id}" oninput="cambiar(${p.id})">
+      <input type="number" min="0" value="0" id="q${p.id}" onchange="cambiar(${p.id})">
     </div>
   `).join("");
 }
@@ -251,10 +251,9 @@ function actualizarResumen(){
   carrito.forEach(i=>{c+=i.cant; t+=i.cant*i.precio});
   resumen.innerText=`Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
 
-  const activo = t>0;
-  btnPDF.classList.toggle("boton-activo", activo);
-  btnCatalogo.classList.toggle("boton-activo", activo);
-  btnCarrito.classList.toggle("boton-activo", activo);
+  btnPDF.classList.toggle("boton-activo",t>0);
+  btnCatalogo.classList.toggle("boton-activo",t>0);
+  btnCarrito.classList.toggle("boton-activo",t>0);
 }
 
 btnCarrito.onclick=()=>modal.style.display="block";
@@ -267,22 +266,48 @@ function filtrar(){
   });
 }
 
-/* PDF PEDIDO SIMPLE */
-btnPDF.onclick=()=>{
+/* ===== PDF PEDIDO ===== */
+btnPDF.onclick = ()=>{
   if(!carrito.length){ alert("Carrito vacío"); return; }
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   let y=10;
-  doc.text("PEDIDO RELOJES CASIO",10,y); y+=10;
-  carrito.forEach(i=>{
-    doc.text(`${i.codigo}  x${i.cant}`,10,y);
-    y+=7;
-  });
-  doc.save("PEDIDO.pdf");
-};
 
-/* CATÁLOGO PDF (tu versión ya funcional) */
-btnCatalogo.onclick=()=>alert("Catálogo PDF funcionando en tu versión soñada (no lo tocamos)");
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(14);
+  doc.text("PEDIDO RELOJES CASIO",10,y); y+=10;
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica","normal");
+  doc.text("Razón Social: "+razon.value,10,y); y+=6;
+  doc.text("Fecha: "+fecha.value,10,y); y+=6;
+  doc.text("Observaciones: "+obs.value,10,y); y+=10;
+
+  doc.setFont("helvetica","bold");
+  doc.text("Código",10,y);
+  doc.text("Cant",60,y);
+  doc.text("Precio",80,y);
+  doc.text("Subtotal",120,y);
+  y+=4;
+  doc.setFont("helvetica","normal");
+
+  let total=0;
+  carrito.forEach(i=>{
+    const s=i.cant*i.precio;
+    total+=s;
+    doc.text(i.codigo,10,y);
+    doc.text(String(i.cant),60,y);
+    doc.text("$ "+i.precio.toFixed(2),80,y);
+    doc.text("$ "+s.toFixed(2),120,y);
+    y+=6;
+  });
+
+  doc.setFont("helvetica","bold");
+  doc.text("TOTAL: $ "+total.toFixed(2),10,y+4);
+
+  doc.save("PEDIDO_CASIO.pdf");
+};
 </script>
 
 </body>
