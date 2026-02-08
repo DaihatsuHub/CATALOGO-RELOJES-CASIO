@@ -109,6 +109,14 @@ th,td{
   <div id="resumen">Cantidad: 0 | Total: $ 0.00</div>
 </div>
 
+<!-- PROGRESO -->
+<div id="progressBox" style="display:none; position:fixed; top:50px; left:0; right:0; background:#fff; padding:10px; z-index:3000; border-bottom:2px solid #ccc;">
+  <div id="progressText">Grabando...</div>
+  <div style="width:100%; background:#ddd; height:10px;">
+    <div id="progressBar" style="width:0%; height:10px; background:red;"></div>
+  </div>
+</div>
+
 <h2>Datos del pedido</h2>
 Razón Social:<br>
 <input type="text" id="razon"><br><br>
@@ -134,6 +142,7 @@ Observaciones:<br>
 </div>
 
 <script>
+/* ===== REFERENCIAS ===== */
 const btnPDF = document.getElementById("btnPDF");
 const btnCatalogo = document.getElementById("btnCatalogo");
 const btnCarrito = document.getElementById("btnCarrito");
@@ -144,10 +153,25 @@ const lista = document.getElementById("lista");
 const catalogo = document.getElementById("catalogo");
 const estado = document.getElementById("estado");
 const busqueda = document.getElementById("busqueda");
+const fecha = document.getElementById("fecha");
+
+/* PROGRESO */
+const progressBox = document.getElementById("progressBox");
+const progressBar = document.getElementById("progressBar");
+const progressText = document.getElementById("progressText");
+
+function startProgress(text){
+  progressBox.style.display="block";
+  progressText.innerText=text;
+  progressBar.style.width="0%";
+}
+function setProgress(p){ progressBar.style.width=p+"%"; }
+function stopProgress(){ progressBox.style.display="none"; }
 
 let productos=[];
 let carrito=[];
 
+/* FECHA AUTOMÁTICA */
 fecha.value = new Date().toISOString().split("T")[0];
 
 /* ===== CSV ===== */
@@ -247,6 +271,11 @@ function actualizarResumen(){
   let c=0,t=0;
   carrito.forEach(i=>{c+=i.cant; t+=i.cant*i.precio});
   resumen.innerText=`Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
+
+  const activo = t>0;
+  btnPDF.classList.toggle("boton-activo", activo);
+  btnCatalogo.classList.toggle("boton-activo", activo);
+  btnCarrito.classList.toggle("boton-activo", activo);
 }
 
 btnCarrito.onclick=()=>modal.style.display="block";
@@ -259,8 +288,33 @@ function filtrar(){
   });
 }
 
+/* ===== PDF PEDIDO ===== */
+btnPDF.onclick=()=>{
+  if(!carrito.length){ alert("Carrito vacío"); return; }
+
+  startProgress("Grabando pedido PDF...");
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y=15;
+
+  doc.text("PEDIDO RELOJES CASIO",10,y); y+=10;
+
+  carrito.forEach((i,idx)=>{
+    doc.text(`${i.codigo} x${i.cant}`,10,y);
+    y+=7;
+    setProgress(Math.round((idx+1)/carrito.length*100));
+  });
+
+  setTimeout(()=>{
+    doc.save("PEDIDO_RELOJES.pdf");
+    stopProgress();
+  },300);
+};
+
 /* ===== PDF CATÁLOGO ===== */
 btnCatalogo.onclick = async ()=>{
+  startProgress("Grabando catálogo PDF...");
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p","mm","a4");
 
@@ -269,18 +323,16 @@ btnCatalogo.onclick = async ()=>{
   const cellH = 42;
   let x=10, y=10, col=0;
 
-  for(const p of productos){
-    /* marco general */
-    doc.rect(x,y,cellW,cellH);
+  for(let i=0;i<productos.length;i++){
+    const p = productos[i];
 
-    /* código */
+    doc.rect(x,y,cellW,cellH);
     doc.setFillColor(191,230,255);
     doc.rect(x,y,cellW,7,"F");
     doc.setFont("helvetica","bold");
     doc.setFontSize(8);
     doc.text(p.codigo, x+cellW/2, y+5,{align:"center"});
 
-    /* imagen */
     try{
       const img = await fetch(p.img).then(r=>r.blob()).then(b=>new Promise(res=>{
         const fr=new FileReader();
@@ -290,21 +342,20 @@ btnCatalogo.onclick = async ()=>{
       doc.addImage(img,"JPEG",x+3,y+9,cellW-6,20,undefined,"FAST");
     }catch{}
 
-    /* precio */
-    doc.setFont("helvetica","bold");
     doc.text("$ "+p.precio.toFixed(2),x+cellW/2,y+33,{align:"center"});
 
     col++;
     x+=cellW;
     if(col===cols){
-      col=0;
-      x=10;
-      y+=cellH;
+      col=0; x=10; y+=cellH;
       if(y>260){ doc.addPage(); y=10; }
     }
+
+    setProgress(Math.round((i+1)/productos.length*100));
   }
 
   doc.save("CATALOGO_RELOJES.pdf");
+  stopProgress();
 };
 </script>
 
