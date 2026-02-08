@@ -2,259 +2,350 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>CATALOGO RELOJES</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo Relojes</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- jsPDF OFFLINE recomendado -->
+<script src="jspdf.umd.min.js"></script>
 
 <style>
-body { font-family: Arial; margin:0; padding-top:120px; background:#f5f5f5; }
-header {
-  position:fixed; top:0; left:0; width:100%; background:#222; color:white; padding:10px; z-index:9999;
+body{
+  font-family: Arial;
+  margin:100px 20px 20px 20px;
 }
-#totales { font-size:18px; }
-input { padding:5px; }
 
-.catalogo {
-  display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
-  gap:10px;
+/* TOP BAR */
+#topbar{
+  position:fixed;
+  top:0; left:0; right:0;
+  background:#222;
+  color:#fff;
   padding:10px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  z-index:1000;
 }
+#topbar button{ padding:6px 12px; cursor:pointer; }
+#resumen{ margin-left:auto; font-weight:bold; }
 
-.item {
-  background:white;
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:10px;
+}
+.card{
   border:1px solid #ccc;
-  padding:5px;
+  padding:10px;
   text-align:center;
+  overflow:visible;
 }
-
-.codigo {
-  background:#cce5ff;
+.codigo{
+  background:#bfe6ff;
   font-weight:bold;
-  padding:3px;
+  padding:4px;
 }
-
-.item img {
-  width:120px;
-  transition:0.3s;
+.card img{
+  max-width:100%;
+  height:168px;
+  object-fit:contain;
+  margin:6px 0;
+  transition:transform .3s ease;
 }
-
-.item img:hover {
+.card:hover img{
   transform:scale(1.5);
-  z-index:999;
 }
-
-.precio {
+.precio{
   font-weight:bold;
-  text-align:center;
-  margin-top:5px;
+  margin:6px 0 10px 0;
 }
+input[type=number]{ width:70px; }
+.seleccionado{ background:orange; }
 
-button {
-  padding:8px;
-  margin:3px;
-  font-size:14px;
-}
-
-.verde {
-  background:green;
-  color:white;
-}
-
-#popup {
+/* MODAL */
+#modal{
   display:none;
   position:fixed;
-  top:10%;
-  left:10%;
-  width:80%;
-  height:80%;
-  background:white;
-  border:2px solid black;
-  padding:10px;
-  overflow:auto;
-  z-index:99999;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  z-index:2000;
 }
+#modalContent{
+  background:#fff;
+  width:90%;
+  max-width:600px;
+  margin:80px auto;
+  padding:15px;
+  border-radius:8px;
+}
+#cerrar{ float:right; cursor:pointer; }
 
-#progressCatalogo {
-  display:none;
+/* TABLE */
+table{
   width:100%;
-  background:#ddd;
-  border-radius:5px;
+  border-collapse:collapse;
+}
+th,td{
+  border:1px solid #ccc;
+  padding:6px;
+  text-align:center;
 }
 
-#progressCatalogoBar {
+.boton-activo{
+  background:green !important;
+  color:#fff !important;
+}
+
+/* PROGRESS BAR */
+#progresoBox{
+  display:none;
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#222;
+  color:#fff;
+  padding:10px 20px;
+  border-radius:8px;
+  font-size:14px;
+}
+#barra{
+  width:300px;
+  height:12px;
+  background:#555;
+  border-radius:6px;
+  overflow:hidden;
+  margin-top:6px;
+}
+#barra div{
+  height:100%;
   width:0%;
-  height:20px;
-  background:green;
-  color:white;
-  text-align:center;
+  background:lime;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-  🔎 Buscar: <input id="buscar" oninput="filtrar()">
+<div id="topbar">
+  <strong>📦 Catálogo</strong>
+  <input type="text" id="busqueda" placeholder="Buscar código..." oninput="filtrar()">
+  <button id="btnPDF">📄 Guardar pedido PDF</button>
+  <button id="btnCatalogo">📘 Descargar Catálogo</button>
+  <button id="btnCarrito">🛒 Ver carrito</button>
+  <div id="resumen">Cantidad: 0 | Total: $ 0.00</div>
+</div>
 
-  <div id="totales">
-    Cantidad: <span id="totalCantidad">0</span> |
-    Total $ <span id="totalImporte">0</span>
+<h2>Datos del pedido</h2>
+Razón Social:<br>
+<input type="text" id="razon"><br><br>
+
+Fecha:<br>
+<input type="date" id="fecha"><br><br>
+
+Observaciones:<br>
+<textarea id="obs" rows="3"></textarea>
+
+<hr>
+
+<div id="estado"></div>
+<div id="catalogo" class="grid"></div>
+
+<!-- MODAL -->
+<div id="modal">
+  <div id="modalContent">
+    <span id="cerrar">❌</span>
+    <h3>🛒 Carrito</h3>
+    <div id="lista">Vacío</div>
   </div>
+</div>
 
-  Razón Social: <input id="razon">
-  Fecha: <input id="fecha" type="date">
-  Observaciones: <input id="obs">
-
-  <br>
-
-  <button id="btnCarrito" onclick="mostrarCarrito()">VER CARRITO</button>
-  <button id="btnPedido" onclick="guardarPedido()">GUARDAR PEDIDO PDF</button>
-  <button id="btnCatalogo" onclick="descargarCatalogo()">DESCARGAR CATÁLOGO</button>
-
-  <div id="progressCatalogo">
-    <div id="progressCatalogoBar">0%</div>
-  </div>
-</header>
-
-<div id="catalogo" class="catalogo"></div>
-
-<div id="popup">
-  <h2>🛒 CARRITO</h2>
-  <div id="tablaCarrito"></div>
-  <button onclick="cerrarCarrito()">Cerrar</button>
+<!-- PROGRESO -->
+<div id="progresoBox">
+  Grabando catálogo...
+  <div id="barra"><div></div></div>
 </div>
 
 <script>
-let productos = [];
-let carrito = {};
+const btnPDF = document.getElementById("btnPDF");
+const btnCatalogo = document.getElementById("btnCatalogo");
+const btnCarrito = document.getElementById("btnCarrito");
+const modal = document.getElementById("modal");
+const cerrar = document.getElementById("cerrar");
+const resumen = document.getElementById("resumen");
+const lista = document.getElementById("lista");
+const catalogo = document.getElementById("catalogo");
+const estado = document.getElementById("estado");
+const busqueda = document.getElementById("busqueda");
+const progresoBox = document.getElementById("progresoBox");
+const barra = document.querySelector("#barra div");
 
-function cargarCSV() {
-  Papa.parse("STOCK.CSV", {
-    download:true,
-    header:true,
-    complete: function(res) {
-      productos = res.data;
-      mostrarCatalogo(productos);
-    }
+let productos=[];
+let carrito=[];
+
+fecha.value = new Date().toISOString().split("T")[0];
+
+/* CSV */
+window.addEventListener("load",()=>{
+  fetch("stock.csv")
+    .then(r=>r.text())
+    .then(txt=>{
+      estado.innerText="Stock cargado automáticamente ✔";
+      cargarCSV(txt);
+    })
+    .catch(()=>estado.innerText="No se pudo cargar stock");
+});
+
+function cargarCSV(txt){
+  productos=[];
+  carrito=[];
+  catalogo.innerHTML="";
+  lista.innerHTML="Vacío";
+  actualizarResumen();
+
+  txt=txt.replace(/^\uFEFF/,"").replace(/\r/g,"").trim();
+  const filas=txt.split("\n");
+  filas.shift();
+
+  filas.forEach((f,i)=>{
+    const c=f.split(";");
+    if(c.length<2) return;
+
+    const codigo=c[0].trim();
+    const precio=parseFloat(c[1].replace(",","."))||0;
+    const carpeta = codigo[0].toUpperCase()>="M" ? "FOTOS2" : "FOTOS";
+
+    productos.push({
+      id:i,
+      codigo,
+      precio,
+      img: carpeta+"/"+codigo+".jpg"
+    });
   });
+  dibujar();
 }
 
-function mostrarCatalogo(lista) {
-  const div = document.getElementById("catalogo");
-  div.innerHTML = "";
-  lista.forEach(p => {
-    if(!p.CODIGO) return;
-    const foto = "FOTOS/" + p.CODIGO + ".jpg";
-    div.innerHTML += `
-      <div class="item">
-        <div class="codigo">${p.CODIGO}</div>
-        <img src="${foto}">
-        <div class="precio">$ ${p.PRECIO}</div>
-        Cantidad:<br>
-        <input type="number" min="0" value="0" oninput="agregar('${p.CODIGO}', this.value, ${p.PRECIO})">
-      </div>
-    `;
-  });
+function dibujar(){
+  catalogo.innerHTML = productos.map(p=>`
+    <div class="card">
+      <div class="codigo">${p.codigo}</div>
+      <img src="${p.img}" onerror="this.style.display='none'">
+      <div class="precio">$ ${p.precio.toFixed(2)}</div>
+      <input type="number" min="0" value="0" id="q${p.id}" onchange="cambiar(${p.id})">
+    </div>
+  `).join("");
 }
 
-function agregar(cod, cant, precio) {
-  cant = parseInt(cant);
-  if(cant>0) carrito[cod] = {cant, precio};
-  else delete carrito[cod];
-  actualizarTotales();
-}
+function cambiar(id){
+  const input=document.getElementById("q"+id);
+  const cant=parseInt(input.value)||0;
+  const p=productos.find(x=>x.id===id);
 
-function actualizarTotales() {
-  let totalC=0, totalI=0;
-  for(let c in carrito){
-    totalC += carrito[c].cant;
-    totalI += carrito[c].cant * carrito[c].precio;
+  carrito = carrito.filter(x=>x.id!==id);
+
+  if(cant>0){
+    carrito.push({id,codigo:p.codigo,cant,precio:p.precio});
+    input.classList.add("seleccionado");
+  }else{
+    input.classList.remove("seleccionado");
   }
-  document.getElementById("totalCantidad").innerText = totalC;
-  document.getElementById("totalImporte").innerText = totalI.toLocaleString();
 
-  ["btnCarrito","btnPedido","btnCatalogo"].forEach(id=>{
-    document.getElementById(id).classList.toggle("verde", totalC>0);
-  });
+  mostrarCarrito();
+  actualizarResumen();
 }
 
-function filtrar() {
-  const t = document.getElementById("buscar").value.toLowerCase();
-  const f = productos.filter(p => 
-    p.CODIGO.toLowerCase().includes(t) || 
-    (p.DESCRIPCION||"").toLowerCase().includes(t)
-  );
-  mostrarCatalogo(f);
-}
-
-function mostrarCarrito() {
-  let html = "<table border=1 width=100%><tr><th>Código</th><th>Cantidad</th><th>Precio</th></tr>";
-  for(let c in carrito){
-    html += `<tr><td>${c}</td><td>${carrito[c].cant}</td><td>$${carrito[c].precio}</td></tr>`;
+function mostrarCarrito(){
+  if(!carrito.length){
+    lista.innerText="Vacío";
+    return;
   }
-  html += "</table>";
-  document.getElementById("tablaCarrito").innerHTML = html;
-  document.getElementById("popup").style.display="block";
-}
-
-function cerrarCarrito() {
-  document.getElementById("popup").style.display="none";
-}
-
-async function guardarPedido() {
-  const div = document.createElement("div");
-  div.innerHTML = `
-    <h2>PEDIDO RELOJES CASIO</h2>
-    <b>Razón Social:</b> ${razon.value}<br>
-    <b>Fecha:</b> ${fecha.value}<br>
-    <b>Observaciones:</b> ${obs.value}<br><br>
-    ${document.getElementById("tablaCarrito").innerHTML}
+  let total=0;
+  lista.innerHTML = `
+    <table>
+      <tr><th>Código</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr>
+      ${carrito.map(i=>{
+        const s=i.cant*i.precio;
+        total+=s;
+        return `<tr>
+          <td>${i.codigo}</td>
+          <td>${i.cant}</td>
+          <td>$ ${i.precio.toFixed(2)}</td>
+          <td>$ ${s.toFixed(2)}</td>
+        </tr>`;
+      }).join("")}
+      <tr><td colspan="3"><b>Total</b></td><td><b>$ ${total.toFixed(2)}</b></td></tr>
+    </table>
   `;
-  await html2pdf().from(div).save("PEDIDO.pdf");
 }
 
-async function descargarCatalogo() {
-  const btn = btnCatalogo;
-  const prog = progressCatalogo;
-  const bar = progressCatalogoBar;
+function actualizarResumen(){
+  let c=0,t=0;
+  carrito.forEach(i=>{c+=i.cant; t+=i.cant*i.precio});
+  resumen.innerText=`Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
+}
 
-  btn.innerText="Grabando...";
-  btn.style.color="red";
-  prog.style.display="block";
-  bar.style.width="0%";
-  bar.innerText="0%";
+btnCarrito.onclick=()=>modal.style.display="block";
+cerrar.onclick=()=>modal.style.display="none";
 
-  let p=0;
-  const timer = setInterval(()=>{
-    p+=5;
-    if(p<=90){
-      bar.style.width=p+"%";
-      bar.innerText=p+"%";
+function filtrar(){
+  const txt=busqueda.value.toLowerCase();
+  document.querySelectorAll(".card").forEach(c=>{
+    c.style.display = c.querySelector(".codigo").innerText.toLowerCase().includes(txt) ? "" : "none";
+  });
+}
+
+/* ===== CATÁLOGO OFFLINE PROFESIONAL ===== */
+btnCatalogo.onclick = async ()=>{
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p","mm","a4");
+
+  progresoBox.style.display="block";
+  barra.style.width="0%";
+
+  const cols = 7;
+  const cellW = 190 / cols;
+  const cellH = 42;
+  let x=10, y=10, col=0;
+
+  for(let i=0;i<productos.length;i++){
+    const p = productos[i];
+
+    doc.rect(x,y,cellW,cellH);
+
+    doc.setFillColor(191,230,255);
+    doc.rect(x,y,cellW,7,"F");
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(8);
+    doc.text(p.codigo, x+cellW/2, y+5,{align:"center"});
+
+    try{
+      const img = await fetch(p.img).then(r=>r.blob()).then(b=>new Promise(res=>{
+        const fr=new FileReader();
+        fr.onload=()=>res(fr.result);
+        fr.readAsDataURL(b);
+      }));
+      doc.addImage(img,"JPEG",x+3,y+9,cellW-6,20);
+    }catch{}
+
+    doc.text("$ "+p.precio.toFixed(2),x+cellW/2,y+33,{align:"center"});
+
+    col++;
+    x+=cellW;
+    if(col===cols){
+      col=0;
+      x=10;
+      y+=cellH;
+      if(y>260){ doc.addPage(); y=10; }
     }
-  },200);
 
-  await html2pdf().set({
-    filename:"CATALOGO_RELOJES.pdf",
-    image:{type:"jpeg", quality:0.6},
-    html2canvas:{scale:1.2,useCORS:true},
-    jsPDF:{unit:"mm",format:"a4"}
-  }).from(document.getElementById("catalogo")).save();
+    barra.style.width = ((i+1)/productos.length*100)+"%";
+    await new Promise(r=>setTimeout(r,10)); // refresca barra
+  }
 
-  clearInterval(timer);
-  bar.style.width="100%";
-  bar.innerText="100%";
-
-  setTimeout(()=>{
-    prog.style.display="none";
-    btn.innerText="DESCARGAR CATÁLOGO";
-    btn.style.color="black";
-  },1000);
-}
-
-cargarCSV();
+  doc.save("CATALOGO_RELOJES.pdf");
+  progresoBox.style.display="none";
+};
 </script>
 
 </body>
