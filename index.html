@@ -91,7 +91,7 @@ th,td{
   text-align:center;
 }
 
-/* ===== BOTONES VERDES ===== */
+/* ===== BOTONES ACTIVOS ===== */
 .boton-activo{
   background:green !important;
   color:white !important;
@@ -151,7 +151,7 @@ let carrito=[];
 
 fecha.value = new Date().toISOString().split("T")[0];
 
-/* ===== CSV ===== */
+/* ===== CSV AUTO ===== */
 window.addEventListener("load",()=>{
   fetch("stock.csv")
     .then(r=>r.text())
@@ -159,7 +159,7 @@ window.addEventListener("load",()=>{
       estado.innerText="Stock cargado automáticamente ✔";
       cargarCSV(txt);
     })
-    .catch(()=>estado.innerText="No se pudo cargar stock");
+    .catch(()=>estado.innerText="❌ No se pudo cargar stock.csv");
 });
 
 function cargarCSV(txt){
@@ -197,11 +197,12 @@ function dibujar(){
       <div class="codigo">${p.codigo}</div>
       <img src="${p.img}" onerror="this.style.display='none'">
       <div class="precio">$ ${p.precio.toFixed(2)}</div>
-      <input type="number" min="0" value="0" id="q${p.id}" onchange="cambiar(${p.id})">
+      <input type="number" min="0" value="0" id="q${p.id}" oninput="cambiar(${p.id})">
     </div>
   `).join("");
 }
 
+/* ===== CARRITO ===== */
 function cambiar(id){
   const input=document.getElementById("q"+id);
   const cant=parseInt(input.value)||0;
@@ -244,30 +245,30 @@ function mostrarCarrito(){
   `;
 }
 
-/* ✅ ESTA ES LA FUNCIÓN CLAVE BLINDADA */
+/* ===== BOTONES VERDES GARANTIZADO ===== */
 function actualizarResumen(){
-  let c=0,t=0;
+  let c=0, t=0;
   carrito.forEach(i=>{
-    c+=i.cant;
-    t+=i.cant*i.precio;
+    c += Number(i.cant);
+    t += Number(i.cant) * Number(i.precio);
   });
 
-  resumen.innerText=`Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
+  resumen.innerText = `Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
 
-  if(t>0){
-    btnPDF.classList.add("boton-activo");
-    btnCatalogo.classList.add("boton-activo");
-    btnCarrito.classList.add("boton-activo");
-  } else {
-    btnPDF.classList.remove("boton-activo");
-    btnCatalogo.classList.remove("boton-activo");
-    btnCarrito.classList.remove("boton-activo");
-  }
+  const activo = t > 0;
+  [btnPDF, btnCatalogo, btnCarrito].forEach(b=>{
+    if(activo) b.classList.add("boton-activo");
+    else b.classList.remove("boton-activo");
+  });
+
+  /* FIX Chrome repaint */
+  document.body.offsetHeight;
 }
 
 btnCarrito.onclick=()=>modal.style.display="block";
 cerrar.onclick=()=>modal.style.display="none";
 
+/* ===== BUSQUEDA ===== */
 function filtrar(){
   const txt=busqueda.value.toLowerCase();
   document.querySelectorAll(".card").forEach(c=>{
@@ -278,28 +279,86 @@ function filtrar(){
 /* ===== PDF PEDIDO ===== */
 btnPDF.onclick=()=>{
   if(!carrito.length){ alert("Carrito vacío"); return; }
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  let y=15;
 
+  let y=10;
   doc.setFont("helvetica","bold");
   doc.text("PEDIDO RELOJES CASIO",10,y); y+=10;
+
   doc.setFont("helvetica","normal");
-  doc.text("Razon Social: "+razon.value,10,y); y+=8;
+  doc.text("Razón Social: "+razon.value,10,y); y+=8;
   doc.text("Fecha: "+fecha.value,10,y); y+=8;
   doc.text("Observaciones: "+obs.value,10,y); y+=10;
 
+  doc.setFont("helvetica","bold");
+  doc.text("Código",10,y);
+  doc.text("Cant",60,y);
+  doc.text("Precio",90,y);
+  doc.text("Subtotal",130,y);
+  y+=5;
+
+  doc.setFont("helvetica","normal");
+  let total=0;
   carrito.forEach(i=>{
-    doc.text(`${i.codigo} x${i.cant}  $${(i.cant*i.precio).toFixed(2)}`,10,y);
+    const s=i.cant*i.precio;
+    total+=s;
+    doc.text(i.codigo,10,y);
+    doc.text(String(i.cant),60,y);
+    doc.text("$"+i.precio.toFixed(2),90,y);
+    doc.text("$"+s.toFixed(2),130,y);
     y+=7;
   });
+
+  doc.setFont("helvetica","bold");
+  doc.text("TOTAL: $ "+total.toFixed(2),10,y+5);
 
   doc.save("PEDIDO_CASIO.pdf");
 };
 
-/* ===== PDF CATÁLOGO (NO TOCADO) ===== */
-btnCatalogo.onclick=async()=>{
-  alert("Catálogo en proceso (versión offline pesada).");
+/* ===== PDF CATALOGO ===== */
+btnCatalogo.onclick = async ()=>{
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p","mm","a4");
+
+  const cols = 7;
+  const cellW = 190 / cols;
+  const cellH = 42;
+  let x=10, y=10, col=0;
+
+  for(const p of productos){
+    doc.rect(x,y,cellW,cellH);
+
+    doc.setFillColor(191,230,255);
+    doc.rect(x,y,cellW,7,"F");
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(8);
+    doc.text(p.codigo, x+cellW/2, y+5,{align:"center"});
+
+    try{
+      const img = await fetch(p.img).then(r=>r.blob()).then(b=>new Promise(res=>{
+        const fr=new FileReader();
+        fr.onload=()=>res(fr.result);
+        fr.readAsDataURL(b);
+      }));
+      doc.addImage(img,"JPEG",x+3,y+9,cellW-6,20,undefined,"FAST");
+    }catch{}
+
+    doc.setFont("helvetica","bold");
+    doc.text("$ "+p.precio.toFixed(2),x+cellW/2,y+33,{align:"center"});
+
+    col++;
+    x+=cellW;
+    if(col===cols){
+      col=0;
+      x=10;
+      y+=cellH;
+      if(y>260){ doc.addPage(); y=10; }
+    }
+  }
+
+  doc.save("CATALOGO_RELOJES.pdf");
 };
 </script>
 
