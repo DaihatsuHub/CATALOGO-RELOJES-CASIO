@@ -233,23 +233,74 @@ function filtrar(){
 }
 
 /* PDF PEDIDO */
-btnPDF.onclick=()=>{
- if(!carrito.length){alert("Carrito vacío");return;}
- const {jsPDF}=window.jspdf;
- const doc=new jsPDF();
- let y=10;
- doc.text("PEDIDO CASIO",10,y);y+=8;
- doc.text("Razon Social: "+razon.value,10,y);y+=6;
- doc.text("Fecha: "+fecha.value,10,y);y+=6;
- doc.text("Obs: "+obs.value,10,y);y+=10;
- let total=0;
+/* PDF PEDIDO FORMATO CARRITO */
+btnPDF.onclick = () => {
+ if(!carrito.length){ alert("Carrito vacío"); return; }
+
+ const { jsPDF } = window.jspdf;
+ const doc = new jsPDF("p","mm","a4");
+ let y = 15;
+
+ // Encabezado
+ doc.setFont("helvetica","bold");
+ doc.setFontSize(14);
+ doc.text("PEDIDO CASIO", 10, y); 
+ y += 10;
+
+ doc.setFontSize(10);
+ doc.setFont("helvetica","normal");
+ doc.text("Razón Social: " + razon.value, 10, y); y += 6;
+ doc.text("Fecha: " + fecha.value, 10, y); y += 6;
+ doc.text("Observaciones: " + obs.value, 10, y); y += 10;
+
+ // Tabla encabezado
+ doc.setFont("helvetica","bold");
+ doc.rect(10,y,60,8); 
+ doc.rect(70,y,20,8);
+ doc.rect(90,y,40,8);
+ doc.rect(130,y,40,8);
+
+ doc.text("Código", 12, y+5);
+ doc.text("Cant", 72, y+5);
+ doc.text("Precio", 92, y+5);
+ doc.text("Subtotal", 132, y+5);
+
+ y += 8;
+
+ // Filas
+ doc.setFont("helvetica","normal");
+ let total = 0;
+
  carrito.forEach(i=>{
-  const s=i.cant*i.precio;total+=s;
-  doc.text(`${i.codigo}  ${i.cant} x $${i.precio}`,10,y);y+=6;
+   const s = i.cant * i.precio;
+   total += s;
+
+   doc.rect(10,y,60,8);
+   doc.rect(70,y,20,8);
+   doc.rect(90,y,40,8);
+   doc.rect(130,y,40,8);
+
+   doc.text(i.codigo, 12, y+5);
+   doc.text(String(i.cant), 72, y+5);
+   doc.text("$ " + i.precio.toFixed(2), 92, y+5);
+   doc.text("$ " + s.toFixed(2), 132, y+5);
+
+   y += 8;
+
+   // salto de página
+   if(y > 270){
+     doc.addPage();
+     y = 15;
+   }
  });
- doc.text("TOTAL: $"+total.toFixed(2),10,y+5);
+
+ // Total
+ doc.setFont("helvetica","bold");
+ doc.text("TOTAL: $ " + total.toFixed(2), 10, y+8);
+
  doc.save("PEDIDO_CASIO.pdf");
 };
+
 
 /* PDF CATALOGO CON BARRA */
 btnCatalogo.onclick = async ()=>{
