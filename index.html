@@ -147,11 +147,32 @@ function cambiar(id){
  const input=document.getElementById("q"+id);
  const cant=parseInt(input.value)||0;
  const p=productos.find(x=>x.id===id);
- carrito=carrito.filter(x=>x.id!==id);
- if(cant>0){carrito.push({codigo:p.codigo,cant,precio:p.precio});input.classList.add("seleccionado");}
- else input.classList.remove("seleccionado");
- mostrarCarrito(); actualizarResumen();
+
+ // Buscar si ya existe en carrito
+ let item = carrito.find(x=>x.codigo===p.codigo);
+
+ if(cant>0){
+   if(item){
+     // actualizar cantidad
+     item.cant = cant;
+   } else {
+     // agregar nuevo
+     carrito.push({codigo:p.codigo,cant,precio:p.precio});
+   }
+   input.classList.add("seleccionado");
+ } else {
+   // eliminar si cantidad = 0
+   carrito = carrito.filter(x=>x.codigo!==p.codigo);
+   input.classList.remove("seleccionado");
+ }
+
+ // ordenar alfabético
+ carrito.sort((a,b)=>a.codigo.localeCompare(b.codigo));
+
+ mostrarCarrito();
+ actualizarResumen();
 }
+
 
 function mostrarCarrito(){
  if(!carrito.length){lista.innerText="Vacío";return;}
