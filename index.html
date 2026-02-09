@@ -144,29 +144,34 @@ function dibujar(){
 
 /* CARRITO */
 function cambiar(id){
- const input=document.getElementById("q"+id);
- const cant=parseInt(input.value)||0;
- const p=productos.find(x=>x.id===id);
+ const input = document.getElementById("q"+id);
+ const cant = parseInt(input.value) || 0;
+ const p = productos.find(x=>x.id===id);
+ if(!p) return;
 
- // Buscar si ya existe en carrito
- let item = carrito.find(x=>x.codigo===p.codigo);
+ // Buscar en carrito por código
+ let item = carrito.find(x=>x.codigo === p.codigo);
 
- if(cant>0){
+ if(cant > 0){
    if(item){
      // actualizar cantidad
      item.cant = cant;
    } else {
-     // agregar nuevo
-     carrito.push({codigo:p.codigo,cant,precio:p.precio});
+     // agregar
+     carrito.push({
+       codigo: p.codigo,
+       precio: p.precio,
+       cant: cant
+     });
    }
    input.classList.add("seleccionado");
  } else {
-   // eliminar si cantidad = 0
-   carrito = carrito.filter(x=>x.codigo!==p.codigo);
+   // eliminar
+   carrito = carrito.filter(x=>x.codigo !== p.codigo);
    input.classList.remove("seleccionado");
  }
 
- // ordenar alfabético
+ // ORDEN ALFABÉTICO SIEMPRE
  carrito.sort((a,b)=>a.codigo.localeCompare(b.codigo));
 
  mostrarCarrito();
@@ -175,12 +180,39 @@ function cambiar(id){
 
 
 function mostrarCarrito(){
- if(!carrito.length){lista.innerText="Vacío";return;}
+ if(carrito.length===0){
+   lista.innerText="Vacío";
+   return;
+ }
+
  let total=0;
- lista.innerHTML=`<table><tr><th>Código</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr>
- ${carrito.map(i=>{const s=i.cant*i.precio;total+=s;return `<tr><td>${i.codigo}</td><td>${i.cant}</td><td>$${i.precio.toFixed(2)}</td><td>$${s.toFixed(2)}</td></tr>`}).join("")}
- <tr><td colspan=3><b>Total</b></td><td><b>$${total.toFixed(2)}</b></td></tr></table>`;
+
+ lista.innerHTML = `
+ <table>
+  <tr>
+    <th>Código</th>
+    <th>Cantidad</th>
+    <th>Precio</th>
+    <th>Subtotal</th>
+  </tr>
+  ${carrito.map(i=>{
+    const s = i.cant * i.precio;
+    total += s;
+    return `
+    <tr>
+      <td>${i.codigo}</td>
+      <td>${i.cant}</td>
+      <td>$ ${i.precio.toFixed(2)}</td>
+      <td>$ ${s.toFixed(2)}</td>
+    </tr>`;
+  }).join("")}
+  <tr>
+    <td colspan="3"><b>Total</b></td>
+    <td><b>$ ${total.toFixed(2)}</b></td>
+  </tr>
+ </table>`;
 }
+
 
 function actualizarResumen(){
  let c=0,t=0;
