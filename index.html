@@ -13,7 +13,7 @@ body{
   margin:100px 20px 20px 20px;
 }
 
-/* ===== TOP BAR ===== */
+/* TOP BAR */
 #topbar{
   position:fixed;
   top:0; left:0; right:0;
@@ -28,7 +28,7 @@ body{
 #topbar button{ padding:6px 12px; cursor:pointer; }
 #resumen{ margin-left:auto; font-weight:bold; }
 
-/* ===== GRID ===== */
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
@@ -38,7 +38,6 @@ body{
   border:1px solid #ccc;
   padding:10px;
   text-align:center;
-  overflow:visible;
 }
 .codigo{
   background:#bfe6ff;
@@ -47,22 +46,17 @@ body{
 }
 .card img{
   max-width:100%;
-  height:168px;
+  height:150px;
   object-fit:contain;
   margin:6px 0;
-  transition:transform .3s ease;
+  transition:transform .3s;
 }
-.card:hover img{
-  transform:scale(1.5);
-}
-.precio{
-  font-weight:bold;
-  margin:6px 0 10px 0;
-}
+.card:hover img{ transform:scale(1.3); }
+.precio{ font-weight:bold; }
 input[type=number]{ width:70px; }
 .seleccionado{ background:orange; }
 
-/* ===== MODAL ===== */
+/* MODAL */
 #modal{
   display:none;
   position:fixed;
@@ -73,14 +67,13 @@ input[type=number]{ width:70px; }
 #modalContent{
   background:#fff;
   width:90%;
-  max-width:600px;
+  max-width:700px;
   margin:80px auto;
   padding:15px;
-  border-radius:8px;
 }
 #cerrar{ float:right; cursor:pointer; }
 
-/* ===== TABLE ===== */
+/* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
@@ -91,7 +84,7 @@ th,td{
   text-align:center;
 }
 
-/* ===== BOTONES ACTIVOS ===== */
+/* BOTONES VERDES */
 .boton-activo{
   background:green !important;
   color:white !important;
@@ -102,7 +95,7 @@ th,td{
 <body>
 
 <div id="topbar">
-  <strong>📦 Catálogo</strong>
+  <b>📦 Catálogo</b>
   <input type="text" id="busqueda" placeholder="Buscar código..." oninput="filtrar()">
   <button id="btnPDF">📥 Descargar Pedido</button>
   <button id="btnCatalogo">📘 Descargar Catálogo</button>
@@ -151,24 +144,18 @@ let carrito=[];
 
 fecha.value = new Date().toISOString().split("T")[0];
 
-/* ===== CSV AUTO ===== */
+/* ===== CARGA CSV ===== */
 window.addEventListener("load",()=>{
   fetch("stock.csv")
     .then(r=>r.text())
     .then(txt=>{
-      estado.innerText="Stock cargado automáticamente ✔";
+      estado.innerText="Stock cargado ✔";
       cargarCSV(txt);
     })
     .catch(()=>estado.innerText="❌ No se pudo cargar stock.csv");
 });
 
 function cargarCSV(txt){
-  productos=[];
-  carrito=[];
-  catalogo.innerHTML="";
-  lista.innerHTML="Vacío";
-  actualizarResumen();
-
   txt=txt.replace(/^\uFEFF/,"").replace(/\r/g,"").trim();
   const filas=txt.split("\n");
   filas.shift();
@@ -181,13 +168,9 @@ function cargarCSV(txt){
     const precio=parseFloat(c[1].replace(",","."))||0;
     const carpeta = codigo[0].toUpperCase()>="M" ? "FOTOS2" : "FOTOS";
 
-    productos.push({
-      id:i,
-      codigo,
-      precio,
-      img: carpeta+"/"+codigo+".jpg"
-    });
+    productos.push({id:i,codigo,precio,img:carpeta+"/"+codigo+".jpg"});
   });
+
   dibujar();
 }
 
@@ -209,9 +192,8 @@ function cambiar(id){
   const p=productos.find(x=>x.id===id);
 
   carrito = carrito.filter(x=>x.id!==id);
-
   if(cant>0){
-    carrito.push({id,codigo:p.codigo,cant,precio:p.precio});
+    carrito.push({codigo:p.codigo,cant,precio:p.precio});
     input.classList.add("seleccionado");
   }else{
     input.classList.remove("seleccionado");
@@ -222,41 +204,27 @@ function cambiar(id){
 }
 
 function mostrarCarrito(){
-  if(!carrito.length){
-    lista.innerText="Vacío";
-    return;
-  }
+  if(!carrito.length){ lista.innerText="Vacío"; return; }
   let total=0;
-  lista.innerHTML = `
-    <table>
-      <tr><th>Código</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr>
-      ${carrito.map(i=>{
-        const s=i.cant*i.precio;
-        total+=s;
-        return `<tr>
-          <td>${i.codigo}</td>
-          <td>${i.cant}</td>
-          <td>$ ${i.precio.toFixed(2)}</td>
-          <td>$ ${s.toFixed(2)}</td>
-        </tr>`;
-      }).join("")}
-      <tr><td colspan="3"><b>Total</b></td><td><b>$ ${total.toFixed(2)}</b></td></tr>
-    </table>
-  `;
+  lista.innerHTML=`
+  <table>
+  <tr><th>Código</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr>
+  ${carrito.map(i=>{
+    const s=i.cant*i.precio; total+=s;
+    return `<tr><td>${i.codigo}</td><td>${i.cant}</td><td>$${i.precio.toFixed(2)}</td><td>$${s.toFixed(2)}</td></tr>`;
+  }).join("")}
+  <tr><td colspan="3"><b>Total</b></td><td><b>$${total.toFixed(2)}</b></td></tr>
+  </table>`;
 }
 
 /* ===== BOTONES VERDES ===== */
 function actualizarResumen(){
-  let c=0, t=0;
-  carrito.forEach(i=>{
-    c += Number(i.cant);
-    t += Number(i.cant) * Number(i.precio);
-  });
+  let c=0,t=0;
+  carrito.forEach(i=>{c+=i.cant; t+=i.cant*i.precio});
+  resumen.innerText=`Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
 
-  resumen.innerText = `Cantidad: ${c} | Total: $ ${t.toFixed(2)}`;
-
-  const activo = t > 0;
-  [btnPDF, btnCatalogo, btnCarrito].forEach(b=>{
+  const activo = t>0;
+  [btnPDF,btnCatalogo,btnCarrito].forEach(b=>{
     if(activo) b.classList.add("boton-activo");
     else b.classList.remove("boton-activo");
   });
@@ -273,7 +241,7 @@ function filtrar(){
   });
 }
 
-/* ===== PDF PEDIDO (TABLA COMO CARRITO) ===== */
+/* ===== PDF PEDIDO (IGUAL AL CARRITO) ===== */
 btnPDF.onclick=()=>{
   if(!carrito.length){ alert("Carrito vacío"); return; }
 
@@ -289,7 +257,6 @@ btnPDF.onclick=()=>{
   doc.text("Fecha: "+fecha.value,10,y); y+=6;
   doc.text("Observaciones: "+obs.value,10,y); y+=10;
 
-  /* encabezado tabla */
   doc.setFont("helvetica","bold");
   doc.text("Código",10,y);
   doc.text("Cantidad",60,y);
@@ -300,8 +267,7 @@ btnPDF.onclick=()=>{
   doc.setFont("helvetica","normal");
   let total=0;
   carrito.forEach(i=>{
-    const s=i.cant*i.precio;
-    total+=s;
+    const s=i.cant*i.precio; total+=s;
     doc.text(i.codigo,10,y);
     doc.text(String(i.cant),60,y);
     doc.text("$"+i.precio.toFixed(2),100,y);
@@ -315,24 +281,23 @@ btnPDF.onclick=()=>{
   doc.save("PEDIDO_CASIO.pdf");
 };
 
-/* ===== PDF CATALOGO (NO TOCADO) ===== */
+/* ===== PDF CATALOGO (CALIDAD BAJA PARA PESO CHICO) ===== */
 btnCatalogo.onclick = async ()=>{
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p","mm","a4");
 
-  const cols = 7;
-  const cellW = 190 / cols;
-  const cellH = 42;
-  let x=10, y=10, col=0;
+  const cols=7;
+  const cellW=190/cols;
+  const cellH=40;
+  let x=10,y=10,col=0;
 
   for(const p of productos){
     doc.rect(x,y,cellW,cellH);
 
     doc.setFillColor(191,230,255);
-    doc.rect(x,y,cellW,7,"F");
-    doc.setFont("helvetica","bold");
+    doc.rect(x,y,cellW,6,"F");
     doc.setFontSize(8);
-    doc.text(p.codigo, x+cellW/2, y+5,{align:"center"});
+    doc.text(p.codigo,x+cellW/2,y+4,{align:"center"});
 
     try{
       const img = await fetch(p.img).then(r=>r.blob()).then(b=>new Promise(res=>{
@@ -340,20 +305,13 @@ btnCatalogo.onclick = async ()=>{
         fr.onload=()=>res(fr.result);
         fr.readAsDataURL(b);
       }));
-      doc.addImage(img,"JPEG",x+3,y+9,cellW-6,20,undefined,"FAST");
+      doc.addImage(img,"JPEG",x+2,y+8,cellW-4,18,undefined,"FAST");
     }catch{}
 
-    doc.setFont("helvetica","bold");
-    doc.text("$ "+p.precio.toFixed(2),x+cellW/2,y+33,{align:"center"});
+    doc.text("$"+p.precio.toFixed(2),x+cellW/2,y+32,{align:"center"});
 
-    col++;
-    x+=cellW;
-    if(col===cols){
-      col=0;
-      x=10;
-      y+=cellH;
-      if(y>260){ doc.addPage(); y=10; }
-    }
+    col++; x+=cellW;
+    if(col===cols){ col=0; x=10; y+=cellH; if(y>260){doc.addPage(); y=10;} }
   }
 
   doc.save("CATALOGO_RELOJES.pdf");
