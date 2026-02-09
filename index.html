@@ -206,39 +206,72 @@ btnCatalogo.onclick = async ()=>{
  const {jsPDF}=window.jspdf;
  const doc=new jsPDF("p","mm","a4");
 
- const cols=7, cellW=190/cols, cellH=40;
+ const cols=7;
+ const cellW=190/cols;
+ const cellH=42;   // un poco más alto para que no se salga nada
+
  let x=10,y=10,col=0;
 
  for(let i=0;i<productos.length;i++){
   const p=productos[i];
 
+  // Marco
+  doc.setDrawColor(0);
   doc.rect(x,y,cellW,cellH);
+
+  // ===== CODIGO (barra celeste) =====
   doc.setFillColor(191,230,255);
   doc.rect(x,y,cellW,6,"F");
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(7);
   doc.text(p.codigo,x+cellW/2,y+4,{align:"center"});
 
+  // ===== IMAGEN PROPORCIONAL =====
   try{
-   const img=await fetch(p.img).then(r=>r.blob()).then(b=>new Promise(res=>{
-    const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(b);
-   }));
-   doc.addImage(img,"JPEG",x+2,y+8,cellW-4,18,undefined,"FAST");
+    const imgData = await fetch(p.img).then(r=>r.blob()).then(b=>new Promise(res=>{
+      const fr=new FileReader();
+      fr.onload=()=>res(fr.result);
+      fr.readAsDataURL(b);
+    }));
+
+    // caja imagen
+    const maxW = cellW-4;
+    const maxH = 20;
+
+    // jsPDF no sabe tamaño real, usamos tamaño fijo proporcional
+    doc.addImage(imgData,"JPEG",x+2,y+8,maxW,maxH,undefined,"FAST");
+
   }catch{}
 
-  doc.text("$"+p.precio.toFixed(2),x+cellW/2,y+32,{align:"center"});
+  // ===== PRECIO =====
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(8);
+  doc.text("$"+p.precio.toFixed(2),x+cellW/2,y+34,{align:"center"});
 
-  col++; x+=cellW;
-  if(col===cols){col=0;x=10;y+=cellH;if(y>260){doc.addPage();y=10;}}
+  // ===== GRID =====
+  col++;
+  x+=cellW;
+  if(col===cols){
+    col=0;
+    x=10;
+    y+=cellH;
+    if(y>260){
+      doc.addPage();
+      y=10;
+    }
+  }
 
-  /* PROGRESO */
+  // PROGRESO
   let pct=Math.round((i+1)/productos.length*100);
   barra.style.width=pct+"%";
   barra.innerText=pct+"%";
-  await new Promise(r=>setTimeout(r,5)); // refresca UI
+  await new Promise(r=>setTimeout(r,3));
  }
 
  progresoBox.style.display="none";
  doc.save("CATALOGO_RELOJES.pdf");
 };
+
 </script>
 
 </body>
